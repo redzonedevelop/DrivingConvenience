@@ -6,9 +6,12 @@
 
 ## 분석 
 
-- 구조적 분석 <- data flow diagram
-- 운용 관점 분석 <- state machine diagram
+### 구조적 분석(data flow diagram)
 
+![구조적 분석](./image/data%20flow%20diagram.png) 
+
+### 운용 관점 분석 (state machine diagram)
+![운용 관점 분석](./image/state%20machine%20diagram.png)
 
 ## 기능 요구사항 
 
