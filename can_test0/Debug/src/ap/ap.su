@@ -1,0 +1,2 @@
+../src/ap/ap.c:15:6:ap_init	8	static
+../src/ap/ap.c:20:6:ap_main	8	static
