@@ -1,7 +1,0 @@
-../src/hw/driver/can.c:35:6:MX_CAN_Init	8	static
-../src/hw/driver/can.c:67:6:HAL_CAN_MspInit	40	static
-../src/hw/driver/can.c:103:6:HAL_CAN_MspDeInit	16	static
-../src/hw/driver/can.c:129:6:filter_init	16	static
-../src/hw/driver/can.c:143:6:send_message	24	static
-../src/hw/driver/can.c:157:6:can_init	16	static
-../src/hw/driver/can.c:163:6:print_message	176	static
