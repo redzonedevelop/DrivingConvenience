@@ -1,0 +1,7 @@
+../src/hw/driver/can.c:35:6:MX_CAN_Init	2
+../src/hw/driver/can.c:67:6:HAL_CAN_MspInit	2
+../src/hw/driver/can.c:103:6:HAL_CAN_MspDeInit	2
+../src/hw/driver/can.c:129:6:filter_init	1
+../src/hw/driver/can.c:143:6:send_message	2
+../src/hw/driver/can.c:157:6:can_init	1
+../src/hw/driver/can.c:163:6:print_message	1
