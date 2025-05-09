@@ -1,3 +1,0 @@
-../src/hw/driver/usart.c:31:6:MX_USART2_UART_Init	8	static
-../src/hw/driver/usart.c:59:6:HAL_UART_MspInit	40	static
-../src/hw/driver/usart.c:87:6:HAL_UART_MspDeInit	16	static
