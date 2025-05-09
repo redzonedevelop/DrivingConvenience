@@ -2,7 +2,7 @@
  * def.h
  *
  *  Created on: May 2, 2025
- *      Author: USER
+ *      Author: DAWIT
  */
 
 #ifndef SRC_COMMON_DEF_H_
@@ -13,7 +13,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdarg.h>
-
+#include <string.h>
+#include <stdlib.h>
 
 
 #define _DEF_LED1          0

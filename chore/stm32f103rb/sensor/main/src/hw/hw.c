@@ -2,7 +2,7 @@
  * hw.c
  *
  *  Created on: May 2, 2025
- *      Author: USER
+ *      Author: DAWIT
  */
 
 
@@ -15,9 +15,9 @@
 
 void hw_init(void)
 {
-	bsp_init();
+  bsp_init();
 
-	led_init();
+  cliInit();
+  led_init();
   uartInit();
-
 }
