@@ -21,6 +21,8 @@ void ap_init(void)
 
   uartOpen(_DEF_UART3, 115200);
   cliOpen(_DEF_UART3, 115200);
+
+  mode_rain_road_init();
 }
 
 void ap_main(void)
@@ -35,6 +37,12 @@ void ap_main(void)
 	  set_sensor_photo_darkness();
 	  set_sensor_humidity();
 	  set_sensor_rain();
+
+////	  rain mode compare 테스트
+//	  set_mode_rain_road();
+//	  compare_mode_rain_road();
+
+
 //    if (millis()-pre_time >= 500)
 //    {
 //      pre_time = millis();

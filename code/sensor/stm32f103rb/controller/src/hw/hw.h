@@ -15,6 +15,7 @@
 #include "led.h"
 #include "uart.h"
 #include "can.h"
+#include "sensor_rain.h"
 
 
 

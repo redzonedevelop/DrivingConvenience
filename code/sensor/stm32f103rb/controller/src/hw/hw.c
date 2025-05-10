@@ -8,11 +8,6 @@
 
 #include "hw.h"
 
-
-
-
-
-
 void hw_init(void)
 {
   bsp_init();
@@ -24,4 +19,6 @@ void hw_init(void)
   adcInit();
   dwtInit();
   dht11Init();
+  sensor_rain_init();
+
 }

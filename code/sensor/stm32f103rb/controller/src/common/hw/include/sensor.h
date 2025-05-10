@@ -24,11 +24,6 @@ typedef enum {
 } highbeam_mode_t;
 
 typedef enum {
-   RAINROAD_MODE_OFF = 0,
-   RAINROAD_MODE_ON,
-} rain_road_mode_t;
-
-typedef enum {
    CORNER_LIGHT_OFF = 0,
    CORNER_LIGHT_LEFT,
    CORNER_LIGHT_RIGHT,
@@ -44,12 +39,12 @@ typedef enum {
 
 typedef struct
 {
-	uint16_t speed;
-	uint16_t steering_angle;
-	uint16_t brightness;
-	bool darkness;
-	uint16_t humidity;
-	bool    rain_flag;
+   uint16_t speed;
+   uint16_t steering_angle;
+   uint16_t brightness;
+   uint16_t darkness;
+   uint16_t humidity;
+   bool    rain;
 } sensor_value_t;
 
 typedef struct
@@ -101,6 +96,7 @@ typedef struct
 } sensor_controller_t;
 
 void set_sensor_photo_brightness( void );
+void set_sensor_photo_darkness( void );
 void set_sensor_humidity( void );
 
 extern sensor_controller_t sensor_info;
