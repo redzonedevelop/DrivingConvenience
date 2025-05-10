@@ -15,7 +15,7 @@ static bool is_open[UART_MAX_CH]; //static 해당 드라이버 c 에서만 사�
 static qbuffer_t qbuffer[UART_MAX_CH]; //
 
 static uint8_t rx_buff[256]; // receive buffer
-static uint8_t rx_data[UART_MAX_CH]; // receive data
+//static uint8_t rx_data[UART_MAX_CH]; // receive data
 
 
 UART_HandleTypeDef huart1;
@@ -44,12 +44,7 @@ bool uartOpen(uint8_t ch, uint32_t baud)
   switch(ch)
   {
     case _DEF_UART1: // usb cdc
-      is_open[ch] = true;
-      ret = true;
-      break;
-
-    case _DEF_UART2:
-			huart1.Instance         = USART1;
+    	huart1.Instance         = USART1;
 			huart1.Init.BaudRate    = baud;
 			huart1.Init.WordLength  = UART_WORDLENGTH_8B;
 			huart1.Init.StopBits    = UART_STOPBITS_1;
@@ -101,7 +96,8 @@ bool uartOpen(uint8_t ch, uint32_t baud)
 				*/
 			}
 			break;
-    case _DEF_UART3:
+
+    case _DEF_UART2:
       huart2.Instance = USART2;
       huart2.Init.BaudRate = baud;
       huart2.Init.WordLength = UART_WORDLENGTH_8B;
@@ -161,16 +157,12 @@ uint32_t uartAvailable(uint8_t ch) // recieve data가 존재하는지
   switch(ch)
   {
     case _DEF_UART1:
-      //ret = cdcAvailable();
-      break;
-
-    case _DEF_UART2:
-      qbuffer[ch].in = (qbuffer[_DEF_UART2].len - hdma_usart1_rx.Instance->CNDTR); // CNDTR은 256에서 감소하므로 전체 size에서 빼 in_index를 설정해준다.
+      qbuffer[ch].in = (qbuffer[_DEF_UART1].len - hdma_usart1_rx.Instance->CNDTR); // CNDTR은 256에서 감소하므로 전체 size에서 빼 in_index를 설정해준다.
       ret = qbufferAvailable(&qbuffer[ch]);
       break;
 
-    case _DEF_UART3:
-      qbuffer[ch].in = (qbuffer[_DEF_UART3].len - hdma_usart2_rx.Instance->CNDTR); // CNDTR은 256에서 감소하므로 전체 size에서 빼 in_index를 설정해준다.
+    case _DEF_UART2:
+      qbuffer[ch].in = (qbuffer[_DEF_UART2].len - hdma_usart2_rx.Instance->CNDTR); // CNDTR은 256에서 감소하므로 전체 size에서 빼 in_index를 설정해준다.
       ret = qbufferAvailable(&qbuffer[ch]);
       break;
   }
@@ -185,16 +177,12 @@ uint8_t uartRead(uint8_t ch) // buffer에서 읽어온다.
   switch(ch)
   {
     case _DEF_UART1:
-      //ret = cdcREad();
+      qbufferRead(&qbuffer[_DEF_UART1], &ret, 1);
       break;
 
     case _DEF_UART2:
-      qbufferRead(&qbuffer[_DEF_UART2], &ret, 1);
+			qbufferRead(&qbuffer[_DEF_UART2], &ret, 1);
       break;
-
-    case _DEF_UART3:
-			qbufferRead(&qbuffer[_DEF_UART3], &ret, 1);
-			break;
   }
 
   return ret;
@@ -209,17 +197,14 @@ uint32_t  uartWrite(uint8_t ch, uint8_t *p_data, uint32_t length) // ch에 p_dat
   switch(ch)
   {
     case _DEF_UART1:
-      //ret = cdcWrite(p_data, length);
-      break;
-
-    case _DEF_UART2:
       status = HAL_UART_Transmit(&huart1, p_data, length, 100);
       if (status == HAL_OK)
       {
         ret = length;
       }
       break;
-    case _DEF_UART3:
+
+    case _DEF_UART2:
       status = HAL_UART_Transmit(&huart2, p_data, length, 100);
       if (status == HAL_OK)
       {
@@ -255,12 +240,9 @@ uint32_t uartGetBaud(uint8_t ch)
   switch(ch)
   {
     case _DEF_UART1:
-      //ret - cdcGetBaud();
-      break;
-    case _DEF_UART2:
       ret = huart1.Init.BaudRate ;
       break;
-    case _DEF_UART3:
+    case _DEF_UART2:
       ret = huart2.Init.BaudRate ;
       break;
   }

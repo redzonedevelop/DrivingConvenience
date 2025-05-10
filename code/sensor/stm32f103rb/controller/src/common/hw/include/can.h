@@ -16,7 +16,7 @@
 
 #define CAN_MAX_CH     HW_CAN_MAX_CH
 
-void MX_CAN_Init(void);
+void can_open(void);
 void filter_init(uint32_t filter_mask, uint32_t filter_id);
 void send_message(uint32_t id, uint8_t* data);
 void can_init(uint32_t filter_mask, uint32_t filter_id);

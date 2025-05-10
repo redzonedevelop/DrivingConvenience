@@ -9,7 +9,8 @@
 #define SRC_AP_AP_H_
 
 
-#include "ap_def.h"
+#include "hw.h"
+
 
 void ap_init(void);
 void ap_main(void);

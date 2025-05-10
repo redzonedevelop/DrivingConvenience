@@ -65,7 +65,7 @@ void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : Darkness_Pin */
   GPIO_InitStruct.Pin = Darkness_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(Darkness_GPIO_Port, &GPIO_InitStruct);
 
@@ -74,6 +74,12 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(Rain_sensor_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : Darkness2_Pin */
+  GPIO_InitStruct.Pin = Darkness2_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(Darkness2_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : DHT11_Pin */
   GPIO_InitStruct.Pin = DHT11_Pin;

@@ -15,8 +15,10 @@
 #include "led.h"
 #include "uart.h"
 #include "can.h"
-#include "sensor_rain.h"
-
+#include "cli.h"
+#include "button.h"
+#include "dht11.h"
+#include "adc.h"
 
 
 void hw_init(void);

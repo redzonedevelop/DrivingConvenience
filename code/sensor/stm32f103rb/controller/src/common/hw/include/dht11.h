@@ -12,6 +12,8 @@
 
 #ifdef _USE_HW_DHT11
 
+#define  DHT11_MAX_CH     HW_DHT11_MAX_CH
+
 #define DHTLIB_OK               0
 #define DHTLIB_ERROR_CHECKSUM   -1
 #define DHTLIB_ERROR_TIMEOUT    -2
