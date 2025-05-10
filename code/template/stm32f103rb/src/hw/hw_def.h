@@ -20,8 +20,10 @@
 #define _USE_HW_UART
 #define     HW_UART_MAX_CH    3
 
+/*
 #define _USE_HW_CAN
 #define     HW_CAN_MAX_CH     1
+*/
 
 #define _USE_HW_CLI
 #define      HW_CLI_CMD_NAME_MAX    16
