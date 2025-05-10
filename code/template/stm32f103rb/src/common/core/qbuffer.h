@@ -30,11 +30,11 @@ typedef struct
 void qbufferInit(void);
 
 
-bool        qbufferCreate(qbuffer_t *p_node, uint8_t *p_buf, uint32_t length);
-bool        qbufferWrite(qbuffer_t *p_node, uint8_t *p_data, uint32_t length);
-bool        qbufferRead(qbuffer_t *p_node, uint8_t *p_data, uint32_t length);
-uint32_t    qbufferAvailable(qbuffer_t *p_node); // 현재 buffer에 있는 개수를 넘긴다.
-void        qbufferFlush(qbuffer_t *p_node); // buffer 비우기 in과 out이 동일한 경우 비운다.
+bool        qbuffer_create(qbuffer_t *p_node, uint8_t *p_buf, uint32_t length);
+bool        qbuffer_write(qbuffer_t *p_node, uint8_t *p_data, uint32_t length);
+bool        qbuffer_read(qbuffer_t *p_node, uint8_t *p_data, uint32_t length);
+uint32_t    qbuffer_available(qbuffer_t *p_node); // 현재 buffer에 있는 개수를 넘긴다.
+void        qbuffer_flush(qbuffer_t *p_node); // buffer 비우기 in과 out이 동일한 경우 비운다.
 
 #ifdef __cplusplus
 }

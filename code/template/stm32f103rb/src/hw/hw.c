@@ -17,8 +17,8 @@ void hw_init(void)
 {
   bsp_init();
 
-  can_open();
-  cliInit();
+  //can_open();
+  cli_init();
   led_init();
-  uartInit();
+  uart_init();
 }

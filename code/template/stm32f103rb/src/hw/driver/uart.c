@@ -15,7 +15,7 @@ static bool is_open[UART_MAX_CH]; //static 해당 드라이버 c 에서만 사�
 static qbuffer_t qbuffer[UART_MAX_CH]; //
 
 static uint8_t rx_buff[256]; // receive buffer
-static uint8_t rx_data[UART_MAX_CH]; // receive data
+//static uint8_t rx_data[UART_MAX_CH]; // receive data
 
 
 UART_HandleTypeDef huart1;
@@ -27,7 +27,7 @@ DMA_HandleTypeDef hdma_usart2_rx;
 
 
 
-bool uartInit(void)
+bool uart_init(void)
 {
   for(int i=0; i<UART_MAX_CH; i++)
   {
@@ -37,7 +37,7 @@ bool uartInit(void)
   return true;
 }
 
-bool uartOpen(uint8_t ch, uint32_t baud)
+bool uart_open(uint8_t ch, uint32_t baud)
 {
   bool ret = false;
 
@@ -61,7 +61,7 @@ bool uartOpen(uint8_t ch, uint32_t baud)
 
 			HAL_UART_DeInit(&huart1);// usb 터미널 쪽에서 baud를 바꾸는 경우 다시 uart를 재 오픈해야한다,
 
-			qbufferCreate(&qbuffer[ch], &rx_buff[0], 256);
+			qbuffer_create(&qbuffer[ch], &rx_buff[0], 256);
 
 			/* DMA controller clock enable */
 			__HAL_RCC_DMA1_CLK_ENABLE();
@@ -113,9 +113,11 @@ bool uartOpen(uint8_t ch, uint32_t baud)
 
       HAL_UART_DeInit(&huart2);// usb 터미널 쪽에서 baud를 바꾸는 경우 다시 uart를 재 오픈해야한다,
 
-			qbufferCreate(&qbuffer[ch], &rx_buff[0], 256);
+			qbuffer_create(&qbuffer[ch], &rx_buff[0], 256);
+
 
 			/* DMA controller clock enable */
+
 			__HAL_RCC_DMA1_CLK_ENABLE();
 
 	    HAL_NVIC_SetPriority(DMA1_Channel6_IRQn, 0, 0);
@@ -143,8 +145,8 @@ bool uartOpen(uint8_t ch, uint32_t baud)
 				qbuffer[ch].in = qbuffer[ch].len - hdma_usart2_rx.Instance->CNDTR;
 				qbuffer[ch].out = qbuffer[ch].in;
 
-				/* interrupt 방식
-				if (HAL_UART_Receive_IT(&huart1, (uint8_t *)&rx_data[_DEF_UART2], 1) != HAL_OK) // rx_data[_DEF_UART2]에 1byte를 받고 callback 함수 실행
+				/*
+				if (HAL_UART_Receive_IT(&huart2, (uint8_t *)&rx_data[_DEF_UART3], 1) != HAL_OK) // rx_data[_DEF_UART2]에 1byte를 받고 callback 함수 실행
 				{
 					ret = false;
 				}
@@ -155,7 +157,7 @@ bool uartOpen(uint8_t ch, uint32_t baud)
 
   return ret;
 }
-uint32_t uartAvailable(uint8_t ch) // recieve data가 존재하는지
+uint32_t uart_available(uint8_t ch) // recieve data가 존재하는지
 {
   uint32_t ret = 0;
   switch(ch)
@@ -166,19 +168,19 @@ uint32_t uartAvailable(uint8_t ch) // recieve data가 존재하는지
 
     case _DEF_UART2:
       qbuffer[ch].in = (qbuffer[_DEF_UART2].len - hdma_usart1_rx.Instance->CNDTR); // CNDTR은 256에서 감소하므로 전체 size에서 빼 in_index를 설정해준다.
-      ret = qbufferAvailable(&qbuffer[ch]);
+      ret = qbuffer_available(&qbuffer[ch]);
       break;
 
     case _DEF_UART3:
       qbuffer[ch].in = (qbuffer[_DEF_UART3].len - hdma_usart2_rx.Instance->CNDTR); // CNDTR은 256에서 감소하므로 전체 size에서 빼 in_index를 설정해준다.
-      ret = qbufferAvailable(&qbuffer[ch]);
+      ret = qbuffer_available(&qbuffer[ch]);
       break;
   }
 
   return ret;
 }
 
-uint8_t uartRead(uint8_t ch) // buffer에서 읽어온다.
+uint8_t uart_read(uint8_t ch) // buffer에서 읽어온다.
 {
   uint8_t ret = 0;
 
@@ -189,18 +191,18 @@ uint8_t uartRead(uint8_t ch) // buffer에서 읽어온다.
       break;
 
     case _DEF_UART2:
-      qbufferRead(&qbuffer[_DEF_UART2], &ret, 1);
+      qbuffer_read(&qbuffer[_DEF_UART2], &ret, 1);
       break;
 
     case _DEF_UART3:
-			qbufferRead(&qbuffer[_DEF_UART3], &ret, 1);
+			qbuffer_read(&qbuffer[_DEF_UART3], &ret, 1);
 			break;
   }
 
   return ret;
 }
 
-uint32_t  uartWrite(uint8_t ch, uint8_t *p_data, uint32_t length) // ch에 p_data의 length 만큼 작성한다.
+uint32_t  uart_write(uint8_t ch, uint8_t *p_data, uint32_t length) // ch에 p_data의 length 만큼 작성한다.
 {
   uint32_t ret = 0;
   HAL_StatusTypeDef status;
@@ -231,7 +233,7 @@ uint32_t  uartWrite(uint8_t ch, uint8_t *p_data, uint32_t length) // ch에 p_dat
   return ret;
 }
 
-uint32_t  uartPrintf(uint8_t ch, char *fmt, ...)
+uint32_t  uart_printf(uint8_t ch, char *fmt, ...)
 {
   char buf[256]; // 가변 인자의 string 처리
   va_list args;
@@ -242,13 +244,13 @@ uint32_t  uartPrintf(uint8_t ch, char *fmt, ...)
   len = vsnprintf(buf, 256, fmt, args); // buf에 가변인자 string을 받아서 작성한다. printf는 표준 입출력에 작성하지만 vsn은 buf에 작성
   va_end(args);
 
-  ret = uartWrite(ch, (uint8_t *)buf, len);
+  ret = uart_write(ch, (uint8_t *)buf, len);
 
 
   return ret;
 }
 
-uint32_t uartGetBaud(uint8_t ch)
+uint32_t uart_get_baud(uint8_t ch)
 {
   uint32_t ret = 0;
 
@@ -286,11 +288,11 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) // weak 함수를 같은 파일을 다른 곳에서 정의하면 그 함수가 호출된다.
 {
 #if 0
-  if (huart->Instance == USART1)
+  if (huart->Instance == USART2)
   {
-    qbufferWrite(&qbuffer[_DEF_UART2], &rx_data[_DEF_UART2], 1); // 수신된 1byte를 buffer에 write한다.
+    qbufferWrite(&qbuffer[_DEF_UART3], &rx_data[_DEF_UART3], 1); // 수신된 1byte를 buffer에 write한다.
 
-    HAL_UART_Receive_IT(&huart1, (uint8_t *)&rx_data[_DEF_UART2], 1); // 호출되고 interrupt를 다 꺼버려서 다시 호출해 1byte를 받는다.
+    HAL_UART_Receive_IT(&huart2, (uint8_t *)&rx_data[_DEF_UART3], 1); // 호출되고 interrupt를 다 꺼버려서 다시 호출해 1byte를 받는다.
 
   }
 #endif
