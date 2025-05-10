@@ -10,10 +10,11 @@
 
 #include "ap_def.h"
 
-typedef enum {
-    RAINROAD_MODE_ERROR    = 0b000,  // 0
-    RAINROAD_MODE_OFF      = 0b100,  // 4
-    RAINROAD_MODE_ON       = 0b101   // 5
+typedef enum
+{
+    RAINROAD_MODE_ERROR = 0b000,    // 0
+    RAINROAD_MODE_OFF   = 0b100,    // 4
+    RAINROAD_MODE_ON    = 0b101     // 5
 } rain_road_mode_t;
 
 void mode_rain_road_init();

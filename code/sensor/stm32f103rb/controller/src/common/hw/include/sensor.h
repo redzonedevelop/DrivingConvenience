@@ -12,31 +12,6 @@
 
 #ifdef _USE_HW_SENSOR
 
-typedef enum {
-   SPEED_MODE_URBAN = 0,
-   SPEED_MODE_COUNTRY,
-   SPEED_MODE_HIGHWAY,
-} speed_mode_t;
-
-typedef enum {
-   HIGHBEAM_MODE_OFF = 0,
-   HIGHBEAM_MODE_ON,
-} highbeam_mode_t;
-
-typedef enum {
-   CORNER_LIGHT_OFF = 0,
-   CORNER_LIGHT_LEFT,
-   CORNER_LIGHT_RIGHT,
-} corner_light_mode_t;
-
-typedef enum {
-   SEAT_MODE_OFF = 0,
-   SEAT_MODE_LEFT,
-   SEAT_MODE_RIGHT,
-   SEAT_MODE_HIGHWAY,
-} seat_mode_t;
-
-
 typedef struct
 {
    uint16_t speed;
@@ -60,12 +35,12 @@ typedef struct
     struct {
         uint8_t mode_value : 3;
         uint8_t reserved   : 5;
-    } mode_speed;
+    } mode_driving;
 
     struct {
         uint8_t mode_value : 3;
         uint8_t reserved   : 5;
-    } mode_highbeam;
+    } mode_high_beam;
 
     struct {
         uint8_t mode_value : 3;
