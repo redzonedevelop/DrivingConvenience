@@ -47,8 +47,3 @@ uint16_t get_sensor_photo_brightness( void )
 	return 0;
 }
 
-uint16_t get_sensor_photo_darkness( void )
-{
-  return 0;
-}
-

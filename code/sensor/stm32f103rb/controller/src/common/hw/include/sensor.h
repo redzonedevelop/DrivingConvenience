@@ -45,11 +45,11 @@ typedef enum {
 typedef struct
 {
 	uint16_t speed;
-   uint16_t steering_angle;
-   uint16_t brightness;
-   uint16_t darkness;
-   uint16_t humidity;
-   bool    rain_flag;
+	uint16_t steering_angle;
+	uint16_t brightness;
+	bool darkness;
+	uint16_t humidity;
+	bool    rain_flag;
 } sensor_value_t;
 
 typedef struct
@@ -97,11 +97,10 @@ typedef struct
 {
    sensor_value_t sensor_value;
    error_t  error_flag;
-   mode_t    mode;
+   mode_t    mode[3];
 } sensor_controller_t;
 
 void set_sensor_photo_brightness( void );
-void set_sensor_photo_darkness( void );
 void set_sensor_humidity( void );
 
 extern sensor_controller_t sensor_info;

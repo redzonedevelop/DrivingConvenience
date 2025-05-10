@@ -63,6 +63,8 @@ void Error_Handler(void);
 #define USART_RX_GPIO_Port GPIOA
 #define LD2_Pin GPIO_PIN_5
 #define LD2_GPIO_Port GPIOA
+#define Darkness_Pin GPIO_PIN_15
+#define Darkness_GPIO_Port GPIOB
 #define Rain_sensor_Pin GPIO_PIN_8
 #define Rain_sensor_GPIO_Port GPIOA
 #define TMS_Pin GPIO_PIN_13
