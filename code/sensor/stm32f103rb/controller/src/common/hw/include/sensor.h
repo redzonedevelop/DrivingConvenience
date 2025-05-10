@@ -104,6 +104,8 @@ void set_sensor_photo_brightness( void );
 void set_sensor_photo_darkness( void );
 void set_sensor_humidity( void );
 
+extern sensor_controller_t sensor_info;
+
 #endif
 
 #endif /* SRC_COMMON_HW_INCLUDE_SENSOR_H_ */

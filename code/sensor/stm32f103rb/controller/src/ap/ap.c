@@ -34,6 +34,7 @@ void ap_main(void)
 	  set_sensor_photo_brightness();
 	  set_sensor_photo_darkness();
 	  set_sensor_humidity();
+	  set_sensor_rain();
 //    if (millis()-pre_time >= 500)
 //    {
 //      pre_time = millis();
