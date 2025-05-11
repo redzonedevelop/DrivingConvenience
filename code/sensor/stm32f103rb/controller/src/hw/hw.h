@@ -17,9 +17,9 @@
 #include "can.h"
 #include "cli.h"
 #include "button.h"
-#include "dht11.h"
 #include "adc.h"
-
+#include "gpio.h"
+#include "dht11.h"
 
 void hw_init(void);
 

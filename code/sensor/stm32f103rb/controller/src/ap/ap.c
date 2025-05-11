@@ -27,14 +27,15 @@ void ap_init(void)
 void ap_main(void)
 {
   uint32_t pre_time;
-
+  uint8_t temp, temp_test;
   pre_time = millis();
   while(1)
   {
 
-  	if (millis() - pre_time >= 3)
+  	if (millis() - pre_time >= 10000)
   	{
-    	button_state = button_get_state(_DEF_BUTTON1);
+    	temp = DHT_GetData();
+      //uartPrintf(_DEF_UART2, "Rx : %d\n", temp);
 
   	}
     /*if (button_get_pressed(_DEF_BUTTON1) == true)
