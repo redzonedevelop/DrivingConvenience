@@ -50,7 +50,7 @@ void ap_main(void)
     }*/
 
     //send_message(0x102, &data[0]); // can 메시지 전송
-    //delay(1000); // 1초 딜레이
+    delay(1000); // 1초 딜레이
 
     cliMain();
 	}

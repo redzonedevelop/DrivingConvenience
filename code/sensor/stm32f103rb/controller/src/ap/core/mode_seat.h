@@ -8,6 +8,8 @@
 #ifndef SRC_AP_CORE_MODE_SEAT_H_
 #define SRC_AP_CORE_MODE_SEAT_H_
 
+#include "ap_def.h"
+
 typedef enum
 {
    SEAT_MODE_OFF     = 0b100, // 4

@@ -6,7 +6,6 @@
  */
 
 #include "mode_driving.h"
-#include "sensor.h"
 
 #define STM_TRANS		0
 #define STM_CONTROLELR	1
@@ -16,7 +15,7 @@ int driving_threshold_min, driving_threshold_max;
 
 void mode_driving_init()
 {
-	sensor_info.mode[STM_TRANS].mode_driving.mode_value = DRIVING_MODE_URBAN;
+	sensor_info.mode[STM_TRANS].mode_driving = DRIVING_MODE_URBAN;
 	set_threshold(DRIVING_MODE_URBAN);
 }
 
@@ -25,13 +24,13 @@ void set_mode_driving()
 	int tmp = 45; // 임시 속도값
 	if (tmp < driving_threshold_min)
 	{ // 주행모드 내려가기
-		sensor_info.mode[STM_TRANS].mode_driving.mode_value--;
-		set_threshold(sensor_info.mode[STM_TRANS].mode_driving.mode_value);
+		sensor_info.mode[STM_TRANS].mode_driving--;
+		set_threshold(sensor_info.mode[STM_TRANS].mode_driving);
 	}
 	else if (tmp > driving_threshold_max)
 	{ // 주행모드 올라가기
-		sensor_info.mode[STM_TRANS].mode_driving.mode_value++;
-		set_threshold(sensor_info.mode[STM_TRANS].mode_driving.mode_value);
+		sensor_info.mode[STM_TRANS].mode_driving++;
+		set_threshold(sensor_info.mode[STM_TRANS].mode_driving);
 	}
 }
 

@@ -17,7 +17,7 @@
 const gpio_tbl_t gpio_tbl[GPIO_MAX_CH] =
     {
         {GPIOB, GPIO_PIN_5,  _DEF_INPUT, GPIO_PIN_RESET, GPIO_PIN_SET,   true},       // 0. SD CD
-        {GPIOA, GPIO_PIN_8,  _DEF_OUTPUT,       GPIO_PIN_SET,   GPIO_PIN_RESET, _DEF_LOW},   // 1. LCD BKL
+        {GPIOA, GPIO_PIN_8,  _DEF_INPUT,       GPIO_PIN_SET,   GPIO_PIN_RESET, _DEF_LOW},   // 1. RAIN
     };
 
 

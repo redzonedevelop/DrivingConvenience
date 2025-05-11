@@ -5,8 +5,7 @@
  *      Author: USER
  */
 
-#include "mode_rain_road.h"
-#include "sensor.h"
+#include "mode_auto.h"
 
 #define STM_TRANS		0
 #define STM_CONTROLELR	1
