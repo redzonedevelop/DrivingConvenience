@@ -6,10 +6,7 @@
  */
 
 #include "mode_rain_road.h"
-
-#define STM_TRANS		0
-#define STM_CONTROLELR	1
-#define STM_SUBORDINATE	2
+#include "sensor.h"
 
 int rain_road_count;
 
@@ -23,7 +20,8 @@ void set_mode_rain_road()
 {
    if (!sensor_info.error_flag.rain_error)
    {
-      if (sensor_info.sensor_value.rain)
+      //if (sensor_info.sensor_value.rain)
+      if (get_sensor_rain())
       {
          sensor_info.mode[STM_CONTROLELR].mode_rain_road = RAINROAD_MODE_ON;
       }
@@ -52,7 +50,7 @@ void compare_mode_rain_road()
       else
       {
          rain_road_count++;
-         if (rain_road_count > 7)
+         if (rain_road_count > 10)
          {
             sensor_info.error_flag.rain_error = true;
             sensor_info.mode[STM_TRANS].mode_rain_road = RAINROAD_MODE_ERROR;

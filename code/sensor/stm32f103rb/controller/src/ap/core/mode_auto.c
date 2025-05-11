@@ -2,65 +2,62 @@
  * mode_auto.c
  *
  *  Created on: May 10, 2025
- *      Author: USER
+ *      Author: eunseo
  */
 
 #include "mode_auto.h"
-
-#define STM_TRANS		0
-#define STM_CONTROLELR	1
-#define STM_SUBORDINATE	2
+#include "sensor.h"
 
 int auto_count;
 
 void mode_auto_init()
 {
-	// sensor_info.mode[STM_TRANS].mode_.mode_value = RAINROAD_MODE_OFF;
+	sensor_info.mode[STM_TRANS].mode_auto = AUTO_MODE_OFF;
 	auto_count = 0;
 }
 
-void set_auto_road()
+void set_auto_mode()
 {
 	if (!sensor_info.error_flag.brightness_error)
 	{
-		if (sensor_info.sensor_value.brightness)
+		if (get_sensor_brightness() > 2000)
 		{
-			// sensor_info.mode[STM_CONTROLELR].mode_.mode_value = RAINROAD_MODE_ON;
+			 sensor_info.mode[STM_CONTROLELR].mode_auto = AUTO_MODE_ON;
 		}
 		else
 		{
-			// sensor_info.mode[STM_CONTROLELR].mode_rain_road.mode_value = RAINROAD_MODE_OFF;
+			 sensor_info.mode[STM_CONTROLELR].mode_auto = AUTO_MODE_OFF;
 		}
 	}
 }
 
-uint8_t get_auto_road(int board)
+uint8_t get_auto_mode(int board)
 {
-	// return sensor_info.mode[board].mode_rain_road.mode_value;
+	 return sensor_info.mode[board].mode_auto;
 }
 
-void compare_auto_road()
+void compare_auto_mode()
 {
 	if (!sensor_info.error_flag.brightness_error)
 	{
-		if (get_auto_road(STM_CONTROLELR) == get_auto_road(STM_SUBORDINATE))
+		if (get_auto_mode(STM_CONTROLELR) == get_auto_mode(STM_SUBORDINATE))
 		{
-			// sensor_info.mode[STM_TRANS].mode_rain_road.mode_value = get_auto_road(STM_CONTROLELR);
+			sensor_info.mode[STM_TRANS].mode_rain_road = get_auto_mode(STM_CONTROLELR);
 			if (auto_count > 0)
 				auto_count--;
 		}
 		else
 		{
 			auto_count++;
-			if (auto_count > 7)
+			if (auto_count > 10)
 			{
 				sensor_info.error_flag.brightness_error = true;
-				// sensor_info.mode[STM_TRANS].mode_rain_road.mode_value = AUTO_MODE_ERROR;
+				sensor_info.mode[STM_TRANS].mode_auto = AUTO_MODE_ERROR;
 			}
 		}
 	}
 	else
 	{
-		// sensor_info.mode[STM_TRANS].mode_rain_road.mode_value = AUTO_MODE_ERROR;
+		 sensor_info.mode[STM_TRANS].mode_auto = AUTO_MODE_ERROR;
 	}
 }

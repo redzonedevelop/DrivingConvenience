@@ -2,14 +2,11 @@
  * mode_fog_light.c
  *
  *  Created on: May 10, 2025
- *      Author: USER
+ *      Author: eunseo
  */
 
 #include "mode_fog_light.h"
-
-#define STM_TRANS       0
-#define STM_CONTROLELR	1
-#define STM_SUBORDINATE 2
+#include "sensor.h"
 
 int fog_light_count;
 
@@ -23,7 +20,7 @@ void set_mode_fog_light()
 {
    if (!sensor_info.error_flag.humidity_error)
    {
-      if (sensor_info.sensor_value.humidity)
+      if (get_sensor_humidity() > 25)
       {
          sensor_info.mode[STM_CONTROLELR].mode_fog_light = FOG_LIGHT_MODE_ON;
       }
@@ -52,7 +49,7 @@ void compare_mode_fog_light()
       else
       {
          fog_light_count++;
-         if (fog_light_count > 7)
+         if (fog_light_count > 10)
          {
             sensor_info.error_flag.humidity_error = true;
             sensor_info.mode[STM_TRANS].mode_fog_light = FOG_LIGHT_MODE_ERROR;

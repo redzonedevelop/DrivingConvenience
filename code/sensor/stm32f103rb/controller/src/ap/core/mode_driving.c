@@ -6,10 +6,7 @@
  */
 
 #include "mode_driving.h"
-
-#define STM_TRANS		0
-#define STM_CONTROLELR	1
-#define STM_SUBORDINATE	2
+#include "sensor.h"
 
 int driving_threshold_min, driving_threshold_max;
 
@@ -21,13 +18,13 @@ void mode_driving_init()
 
 void set_mode_driving()
 {
-	int tmp = 45; // 임시 속도값
-	if (tmp < driving_threshold_min)
+	int speed = get_speed();
+	if (speed < driving_threshold_min)
 	{ // 주행모드 내려가기
 		sensor_info.mode[STM_TRANS].mode_driving--;
 		set_threshold(sensor_info.mode[STM_TRANS].mode_driving);
 	}
-	else if (tmp > driving_threshold_max)
+	else if (speed > driving_threshold_max)
 	{ // 주행모드 올라가기
 		sensor_info.mode[STM_TRANS].mode_driving++;
 		set_threshold(sensor_info.mode[STM_TRANS].mode_driving);

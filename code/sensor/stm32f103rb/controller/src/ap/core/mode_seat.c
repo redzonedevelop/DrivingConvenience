@@ -6,10 +6,7 @@
  */
 
 #include "mode_seat.h"
-
-#define STM_TRANS		0
-#define STM_CONTROLELR	1
-#define STM_SUBORDINATE	2
+#include "sensor.h"
 
 int seat_threshold_left, seat_threshold_right;
 
@@ -22,8 +19,8 @@ void mode_seat_init()
 
 void set_seat_beam()
 {
-	int tmp = 2500;	 // 임시 조향값
-	int speed = 120; // 임시 속도값
+	int speed = get_speed();
+	int steering_angle = get_steering_angle();
 
 	if (speed > 100)
 	{
@@ -31,11 +28,11 @@ void set_seat_beam()
 	}
 	else if (speed > 50)
 	{
-		if (tmp < seat_threshold_left)
+		if (steering_angle < seat_threshold_left)
 		{ // 좌회전
 			sensor_info.mode[STM_TRANS].mode_seat = SEAT_MODE_LEFT;
 		}
-		else if (tmp > seat_threshold_right)
+		else if (steering_angle > seat_threshold_right)
 		{ // 우회전
 			sensor_info.mode[STM_TRANS].mode_seat = SEAT_MODE_RIGHT;
 		}

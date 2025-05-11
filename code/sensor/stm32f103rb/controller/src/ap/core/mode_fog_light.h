@@ -2,7 +2,7 @@
  * mode_fog_light.h
  *
  *  Created on: May 10, 2025
- *      Author: USER
+ *      Author: eunseo
  */
 
 #ifndef SRC_AP_CORE_MODE_FOG_LIGHT_H_

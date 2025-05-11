@@ -10,11 +10,13 @@
 
 #include "hw.h"
 
+
+
 typedef struct
 {
    uint16_t speed;
    int16_t  steering_angle;
-} car_info_t;
+} car_value_t;
 
 typedef struct
 {
@@ -45,8 +47,8 @@ typedef struct
 
 typedef struct
 {
-   car_info_t car_info;
-   sensor_value_t sensor_value;
+   car_value_t car_value[4];
+   sensor_value_t sensor_value[4];
    error_t error_flag;
    mode_t mode[3];
 } sensor_controller_t;

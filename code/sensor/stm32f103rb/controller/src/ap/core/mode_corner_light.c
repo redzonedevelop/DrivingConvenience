@@ -6,10 +6,7 @@
  */
 
 #include "mode_corner_light.h"
-
-#define STM_TRANS		0
-#define STM_CONTROLELR	1
-#define STM_SUBORDINATE	2
+#include "sensor.h"
 
 int corner_threshold_left, corner_threshold_right;
 
@@ -22,12 +19,12 @@ void mode_corner_light_init()
 
 void set_corner_light_beam()
 {
-	int tmp = 2500; // 임시 조향값
-	if (tmp < corner_threshold_left)
+	int steering_angle = get_steering_angle();
+	if (steering_angle < corner_threshold_left)
 	{ // 좌회전
 		sensor_info.mode[STM_TRANS].mode_corner_light = CORNER_LIGHT_MODE_LEFT;
 	}
-	else if (tmp > corner_threshold_right)
+	else if (steering_angle > corner_threshold_right)
 	{ // 우회전
 		sensor_info.mode[STM_TRANS].mode_corner_light = CORNER_LIGHT_MODE_RIGHT;
 	}

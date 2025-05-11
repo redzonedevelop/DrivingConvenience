@@ -10,7 +10,26 @@
 
 #include "ap_def.h"
 
-void set_sensor_rain();
+#define STM_TRANS		0
+#define STM_CONTROLELR	1
+#define STM_SUBORDINATE	2
+
+void set_speed(int count);
+int get_speed();
+
+void set_steering_angle(int count);
+int get_steering_angle();
+
+void set_sensor_brightness(int count);
+int get_sensor_brightness();
+
+void set_sensor_darkness(int count);
+bool get_sensor_darkness();
+
+void set_sensor_humidity(int count);
+int get_sensor_humidity();
+
+void set_sensor_rain(int count);
 bool get_sensor_rain();
 
 #endif /* SRC_AP_CORE_SENSOR_SENSOR_RAIN_H_ */
