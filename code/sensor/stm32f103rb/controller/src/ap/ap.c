@@ -38,7 +38,7 @@ void ap_main(void)
 //      //uartPrintf(_DEF_UART2, "Rx : %d\n", temp);
 //
 //  	}
-    /*if (button_get_pressed(_DEF_BUTTON1) == true)
+    if (button_get_state(_DEF_BUTTON1) == false)
     {
       pre_time = millis();
       led_toggle(_DEF_LED1);
@@ -47,10 +47,10 @@ void ap_main(void)
       adc_data[1] = adc_read(_DEF_ADC2);
       adc_data[2] = adc_read(_DEF_ADC3);
       //uartPrintf(_DEF_UART2, "Rx : %d\n", adc_data);
-    }*/
+    }
 
     //send_message(0x102, &data[0]); // can 메시지 전송
-    delay(1000); // 1초 딜레이
+    //delay(1000); // 1초 딜레이
 
     cliMain();
 	}
@@ -85,11 +85,23 @@ void app_scheduling(void)
 
 void app_task_1ms(void)
 {
-	set_sensor_rain();
 }
 
 void app_task_5ms(void)
 {
+	/*
+	count++
+	if(count < 4)
+	{
+		set sensor(count)
+		sensor[count ] = get sensor
+		if(sensor[3] >0)
+		{
+			set mode
+			compare mode
+		}
+	}
+	*/
 }
 
 void app_task_10ms(void)
@@ -98,4 +110,8 @@ void app_task_10ms(void)
 
 void app_task_20ms(void)
 {
+	/*
+	can trans
+	count = 0;
+	*/
 }

@@ -52,7 +52,7 @@ void compare_mode_rain_road()
       else
       {
          rain_road_count++;
-         if (rain_road_count > 7)
+         if (rain_road_count > 10)
          {
             sensor_info.error_flag.rain_error = true;
             sensor_info.mode[STM_TRANS].mode_rain_road = RAINROAD_MODE_ERROR;

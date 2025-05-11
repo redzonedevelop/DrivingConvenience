@@ -23,7 +23,7 @@ void set_mode_fog_light()
 {
    if (!sensor_info.error_flag.humidity_error)
    {
-      if (sensor_info.sensor_value.humidity)
+      if (sensor_info.sensor_value.humidity > 30)
       {
          sensor_info.mode[STM_CONTROLELR].mode_fog_light = FOG_LIGHT_MODE_ON;
       }
@@ -39,7 +39,7 @@ uint8_t get_mode_fog_light(int board)
    return sensor_info.mode[board].mode_fog_light;
 }
 
-void compare_mode_fog_light()
+void compare_mode_fog_light() // esp 호출 필요
 {
    if (!sensor_info.error_flag.humidity_error)
    {

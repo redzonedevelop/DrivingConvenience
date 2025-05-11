@@ -52,7 +52,7 @@ void compare_mode_high_beam()
       else
       {
          high_beam_count++;
-         if (high_beam_count > 7)
+         if (high_beam_count > 10)
          {
             sensor_info.error_flag.darkness_error = true;
             sensor_info.mode[STM_TRANS].mode_high_beam = HIGH_BEAM_MODE_ERROR;
