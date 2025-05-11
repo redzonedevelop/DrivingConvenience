@@ -7,9 +7,18 @@
 
 
 #include "dht11.h"
+#include "cli.h"
 
 #define DHT_PORT GPIOB
 #define DHT_PIN GPIO_PIN_5
+
+DHT_DataTypedef dht11;
+
+
+#ifdef _USE_HW_CLI
+static void cli_dht11(cli_args_t *arg);
+#endif
+
 
 void dwtInit(void)
 {
@@ -21,13 +30,6 @@ void dwtInit(void)
     DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
 }
 
-void delay_us(uint32_t us)
-{
-    uint32_t start = DWT->CYCCNT;
-    // 변환: µs → 클럭 사이클
-    uint32_t cycles = us * (SystemCoreClock / 1000000);
-    while ((DWT->CYCCNT - start) < cycles);
-}
 
 void dht11Init(void)
 {
@@ -40,6 +42,11 @@ void dht11Init(void)
 	 GPIO_InitStruct.Pull = GPIO_NOPULL;
 	 GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	 HAL_GPIO_Init(DHT_PORT, &GPIO_InitStruct);
+
+#ifdef _USE_HW_CLI
+  cliAdd("dht11", cli_dht11);
+#endif
+
 }
 
 void Set_Pin_Output (GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin)
@@ -60,7 +67,7 @@ void Set_Pin_Input (GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin)
 	HAL_GPIO_Init(GPIOx, &GPIO_InitStruct);
 }
 
-int DHT_GetData (DHT_DataTypedef *DHT_Data)
+uint8_t DHT_GetData (void)
 {
     // BUFFER TO RECEIVE
 	//Rh_byte1 Rh_byte2 Temp_byte1 Temp_byte2 CHKSUM
@@ -133,10 +140,36 @@ int DHT_GetData (DHT_DataTypedef *DHT_Data)
 
     if (bits[4] != sum) return DHTLIB_ERROR_CHECKSUM;
 
-	DHT_Data->Temperature = (int)bits[0];
-	DHT_Data->Humidity = (int)bits[2];
+	dht11.Temperature = bits[0];
+	dht11.Humidity = bits[2];
 
-    return DHTLIB_OK;
+    return dht11.Humidity;
 }
 
+
+
+#ifdef _USE_HW_CLI
+void cli_dht11(cli_args_t *args)
+{
+  bool ret = false;
+
+
+  if (args->argc == 1 && args->isStr(0, "data") == true)
+  {
+    while(cliKeepLoop())
+    {
+
+    	cliPrintf("%d", DHT_GetData());
+      cliPrintf("\n");
+      delay(100);
+    }
+    ret = true;
+  }
+
+  if (ret != true)
+  {
+    cliPrintf("dht11 data\n");
+  }
+}
+#endif
 

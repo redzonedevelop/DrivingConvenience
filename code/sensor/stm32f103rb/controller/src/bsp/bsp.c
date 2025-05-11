@@ -10,7 +10,6 @@
 
 
 
-
 void SystemClock_Config(void);
 
 void bsp_init(void)
@@ -20,6 +19,14 @@ void bsp_init(void)
 
   __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+
+  // Enable TRC (Trace)
+  CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+  // Reset cycle counter
+  DWT->CYCCNT = 0;
+  // Enable the cycle counter
+  DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
 }
 
 void delay(uint32_t ms)
@@ -27,10 +34,19 @@ void delay(uint32_t ms)
 	HAL_Delay(ms);
 }
 
+void delay_us(uint32_t us)
+{
+    uint32_t start = DWT->CYCCNT;
+    // 변환: µs → 클럭 사이클
+    uint32_t cycles = us * (SystemCoreClock / 1000000);
+    while ((DWT->CYCCNT - start) < cycles);
+}
+
 uint32_t millis(void)
 {
 	return HAL_GetTick();
 }
+
 
 
 /**
@@ -41,6 +57,7 @@ void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+  RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
@@ -69,6 +86,12 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_ADC;
+  PeriphClkInit.AdcClockSelection = RCC_ADCPCLK2_DIV8;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
+  {
+    Error_Handler();
+  }
 }
 
 /* USER CODE BEGIN 4 */
@@ -86,6 +109,7 @@ void Error_Handler(void)
   __disable_irq();
   while (1)
   {
+
   }
   /* USER CODE END Error_Handler_Debug */
 }

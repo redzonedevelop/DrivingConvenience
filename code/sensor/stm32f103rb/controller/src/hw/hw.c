@@ -18,10 +18,11 @@ void hw_init(void)
   bsp_init();
 
   can_open();
-  cliInit();
-  led_init();
   uartInit();
-  adcInit();
-  dwtInit();
+  cliInit();
+  adc_init();
+  led_init();
+
+  button_init();
   dht11Init();
 }

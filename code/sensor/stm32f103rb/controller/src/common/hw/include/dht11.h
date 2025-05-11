@@ -12,18 +12,20 @@
 
 #ifdef _USE_HW_DHT11
 
+#define  DHT11_MAX_CH     HW_DHT11_MAX_CH
+
 #define DHTLIB_OK               0
 #define DHTLIB_ERROR_CHECKSUM   -1
 #define DHTLIB_ERROR_TIMEOUT    -2
 
 typedef struct
 {
-	float Temperature;
-	float Humidity;
+	uint8_t Temperature;
+	uint8_t Humidity;
 }DHT_DataTypedef;
 
 
-int DHT_GetData (DHT_DataTypedef *DHT_Data);
+uint8_t DHT_GetData (void);
 void dht11Init(void);
 void dwtInit(void);
 
