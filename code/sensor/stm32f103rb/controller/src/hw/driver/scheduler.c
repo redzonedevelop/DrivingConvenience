@@ -45,7 +45,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 void scheduler_update_flags(void)
 {
 	u32nu_counter_1ms++;
-    HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+    //HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
 	st_scheduling_info.u8nu_scheduling_1ms_flag = 1;
 
     if (u32nu_counter_1ms % 5 == 0){
