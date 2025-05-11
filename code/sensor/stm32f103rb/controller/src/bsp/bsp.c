@@ -21,6 +21,12 @@ void bsp_init(void)
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
+  // Enable TRC (Trace)
+  CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+  // Reset cycle counter
+  DWT->CYCCNT = 0;
+  // Enable the cycle counter
+  DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
 }
 
 void delay(uint32_t ms)
@@ -28,10 +34,19 @@ void delay(uint32_t ms)
 	HAL_Delay(ms);
 }
 
+void delay_us(uint32_t us)
+{
+    uint32_t start = DWT->CYCCNT;
+    // 변환: µs → 클럭 사이클
+    uint32_t cycles = us * (SystemCoreClock / 1000000);
+    while ((DWT->CYCCNT - start) < cycles);
+}
+
 uint32_t millis(void)
 {
 	return HAL_GetTick();
 }
+
 
 
 /**

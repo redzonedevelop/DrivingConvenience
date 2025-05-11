@@ -20,12 +20,12 @@
 
 typedef struct
 {
-	float Temperature;
-	float Humidity;
+	uint8_t Temperature;
+	uint8_t Humidity;
 }DHT_DataTypedef;
 
 
-int DHT_GetData (DHT_DataTypedef *DHT_Data);
+uint8_t DHT_GetData (void);
 void dht11Init(void);
 void dwtInit(void);
 

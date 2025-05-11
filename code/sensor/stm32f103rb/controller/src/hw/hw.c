@@ -24,6 +24,5 @@ void hw_init(void)
   led_init();
 
   button_init();
-
   dht11Init();
 }
