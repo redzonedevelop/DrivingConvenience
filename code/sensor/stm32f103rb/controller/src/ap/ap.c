@@ -12,14 +12,13 @@
 
 //uint8_t data[8] = {0, 0, 0, 0, 0, 0, 0, 0};
   GPIO_PinState button_state = GPIO_PIN_SET;
-
-
+  sensor_controller_t sensor_info;
 void ap_init(void)
 {
   //can_init(0x7f3, 0x106); // 필터 마스크, 필터 id를 인자로 입력
 
   //uartOpen(_DEF_UART1, 115200);
-
+  scheduler_init();
   uartOpen(_DEF_UART2, 115200);
   cliOpen(_DEF_UART2, 115200);
 }
@@ -31,13 +30,14 @@ void ap_main(void)
   pre_time = millis();
   while(1)
   {
+	  app_scheduling();
 
-  	if (millis() - pre_time >= 10000)
-  	{
-    	temp = DHT_GetData();
-      //uartPrintf(_DEF_UART2, "Rx : %d\n", temp);
-
-  	}
+//  	if (millis() - pre_time >= 10000)
+//  	{
+//    	temp = DHT_GetData();
+//      //uartPrintf(_DEF_UART2, "Rx : %d\n", temp);
+//
+//  	}
     /*if (button_get_pressed(_DEF_BUTTON1) == true)
     {
       pre_time = millis();
@@ -54,4 +54,48 @@ void ap_main(void)
 
     cliMain();
 	}
+}
+
+void app_scheduling(void)
+{
+    if (st_scheduling_info.u8nu_scheduling_1ms_flag == 1u)
+    {
+        st_scheduling_info.u8nu_scheduling_1ms_flag = 0u;
+        app_task_1ms();
+    }
+
+    if (st_scheduling_info.u8nu_scheduling_5ms_flag == 1u)
+    {
+        st_scheduling_info.u8nu_scheduling_5ms_flag = 0u;
+        app_task_5ms();
+    }
+
+    if (st_scheduling_info.u8nu_scheduling_10ms_flag == 1u)
+    {
+        st_scheduling_info.u8nu_scheduling_10ms_flag = 0u;
+        app_task_10ms();
+    }
+
+    if (st_scheduling_info.u8nu_scheduling_20ms_flag == 1u)
+    {
+        st_scheduling_info.u8nu_scheduling_20ms_flag = 0u;
+        app_task_20ms();
+    }
+}
+
+void app_task_1ms(void)
+{
+	set_sensor_rain();
+}
+
+void app_task_5ms(void)
+{
+}
+
+void app_task_10ms(void)
+{
+}
+
+void app_task_20ms(void)
+{
 }

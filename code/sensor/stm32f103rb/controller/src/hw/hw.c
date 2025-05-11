@@ -25,4 +25,5 @@ void hw_init(void)
 
   button_init();
   dht11Init();
+
 }
