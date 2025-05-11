@@ -18,8 +18,8 @@ typedef enum
 } auto_mode_t;
 
 void mode_auto_init();
-void set_auto_road();
-uint8_t get_auto_road(int board);
-void compare_auto_road();
+void set_auto_mode();
+uint8_t get_auto_mode(int board);
+void compare_auto_mode();
 
 #endif /* SRC_AP_CORE_MODE_AUTO_H_ */

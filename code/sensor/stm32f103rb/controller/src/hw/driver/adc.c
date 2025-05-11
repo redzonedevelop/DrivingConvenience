@@ -17,7 +17,7 @@ adc_tbl_t adc_tbl[ADC_MAX_CH] =
     {
         {ADC_CHANNEL_0, ADC_REGULAR_RANK_1, ADC_SAMPLETIME_71CYCLES_5},
         {ADC_CHANNEL_1, ADC_REGULAR_RANK_1, ADC_SAMPLETIME_71CYCLES_5},
-        {ADC_CHANNEL_4, ADC_REGULAR_RANK_1, ADC_SAMPLETIME_71CYCLES_5},
+        {ADC_CHANNEL_8, ADC_REGULAR_RANK_1, ADC_SAMPLETIME_71CYCLES_5},
     };
 
 
@@ -90,15 +90,19 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* adcHandle)
     __HAL_RCC_ADC1_CLK_ENABLE();
 
     __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+
     /**ADC1 GPIO Configuration
     PA0-WKUP     ------> ADC1_IN0
     PA1     ------> ADC1_IN1
     PA4     ------> ADC1_IN4
     */
-    GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_4;
+    GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
+    GPIO_InitStruct.Pin = GPIO_PIN_8;
+    GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
   /* USER CODE BEGIN ADC1_MspInit 1 */
 
   /* USER CODE END ADC1_MspInit 1 */
@@ -121,8 +125,8 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* adcHandle)
     PA1     ------> ADC1_IN1
     PA4     ------> ADC1_IN4
     */
-    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_4);
-
+    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_0|GPIO_PIN_1);
+    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_8);
   /* USER CODE BEGIN ADC1_MspDeInit 1 */
 
   /* USER CODE END ADC1_MspDeInit 1 */

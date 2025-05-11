@@ -161,7 +161,7 @@ void cli_dht11(cli_args_t *args)
 
     	cliPrintf("%d", DHT_GetData());
       cliPrintf("\n");
-      delay(100);
+      delay(2000);
     }
     ret = true;
   }
