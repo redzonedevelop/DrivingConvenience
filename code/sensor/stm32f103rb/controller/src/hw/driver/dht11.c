@@ -141,7 +141,9 @@ uint8_t DHT_GetData (void)
     if (bits[4] != sum) return DHTLIB_ERROR_CHECKSUM;
 
 	dht11.Temperature = bits[0];
+	dht11.Temperature_float = bits[1];
 	dht11.Humidity = bits[2];
+	dht11.Humidity_float = bits[3];
 
     return dht11.Humidity;
 }
@@ -161,7 +163,7 @@ void cli_dht11(cli_args_t *args)
 
     	cliPrintf("%d", DHT_GetData());
       cliPrintf("\n");
-      delay(100);
+      delay(200);
     }
     ret = true;
   }
