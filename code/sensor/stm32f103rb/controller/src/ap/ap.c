@@ -18,7 +18,7 @@ void ap_init(void)
   //can_init(0x7f3, 0x106); // 필터 마스크, 필터 id를 인자로 입력
 
   //uartOpen(_DEF_UART1, 115200);
-  scheduler_init();
+  //scheduler_init();
   uartOpen(_DEF_UART2, 115200);
   cliOpen(_DEF_UART2, 115200);
 }
@@ -30,7 +30,7 @@ void ap_main(void)
   pre_time = millis();
   while(1)
   {
-	  app_scheduling();
+	  //app_scheduling();
 
 //  	if (millis() - pre_time >= 10000)
 //  	{

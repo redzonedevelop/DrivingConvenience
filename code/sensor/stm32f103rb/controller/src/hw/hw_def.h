@@ -37,7 +37,7 @@
 #define    HW_BUTTON_MAX_CH   1
 
 #define _USE_HW_GPIO
-#define    HW_GPIO_MAX_CH     2
+#define    HW_GPIO_MAX_CH     3
 
 
 #define _USE_HW_CLI

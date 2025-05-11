@@ -7,7 +7,7 @@
 
 
 #include "adc.h"
-
+#include "cli.h"
 
 ADC_HandleTypeDef hadc1;
 
@@ -20,6 +20,10 @@ adc_tbl_t adc_tbl[ADC_MAX_CH] =
         {ADC_CHANNEL_8, ADC_REGULAR_RANK_1, ADC_SAMPLETIME_71CYCLES_5},
     };
 
+
+#ifdef _USE_HW_CLI
+static void cli_adc(cli_args_t *arg);
+#endif
 
 void adc_init(void)
 {
@@ -37,6 +41,9 @@ void adc_init(void)
     Error_Handler();
   }
 
+#ifdef _USE_HW_CLI
+  cliAdd("adc", cli_adc);
+#endif
 }
 
 uint16_t adc_read(uint8_t ch)
@@ -72,7 +79,32 @@ uint16_t adc_read(uint8_t ch)
 
 
 
+#ifdef _USE_HW_CLI
+void cli_adc(cli_args_t *args)
+{
+	bool ret = false;
 
+	if (args->argc == 2 && args->isStr(0, "read") == true)
+	{
+    uint8_t ch;
+
+    ch = (uint8_t)args->getData(1);
+		while(cliKeepLoop())
+		{
+      cliPrintf("adc read %d : %d\n", ch, adc_read(ch));
+			delay(1000);
+		}
+		ret = true;
+	}
+
+	if (ret != true)
+	{
+    cliPrintf("adc read ch[0~%d]\n", ADC_MAX_CH-1);
+	}
+}
+
+
+#endif
 
 
 
