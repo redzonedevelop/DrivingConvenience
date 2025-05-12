@@ -81,9 +81,12 @@ bool get_sensor_darkness()
 }
 
 void set_esp32(){
+	if(uartAvailable(_DEF_UART1) > 0){
+		esp32_receive.rain = uartRead(_DEF_UART1);
+		esp32_receive.humidity = uartRead(_DEF_UART1);
+	}
 
-	esp32_receive.humidity = uartRead(_DEF_UART1);
-	esp32_receive.rain = uartRead(_DEF_UART1);
+
 }
 
 void set_sensor_rain(int count){
