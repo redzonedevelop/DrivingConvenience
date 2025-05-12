@@ -20,7 +20,7 @@ void ap_init(void)
 {
   can_init(0x7FF, 0x112); // 필터 마스크, 필터 id를 인자로 입력
 
-  //uartOpen(_DEF_UART1, 115200);
+  uartOpen(_DEF_UART1, 115200);
   mode_auto_init();
   mode_corner_light_init();
   mode_driving_init();
@@ -29,8 +29,8 @@ void ap_init(void)
   mode_rain_road_init();
   mode_seat_init();
   scheduler_init();
-  uartOpen(_DEF_UART2, 115200);
-  cliOpen(_DEF_UART2, 115200);
+//  uartOpen(_DEF_UART2, 115200);
+//  cliOpen(_DEF_UART2, 115200);
 
 
 
