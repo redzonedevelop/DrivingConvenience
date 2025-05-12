@@ -6,10 +6,7 @@
  */
 
 #include "mode_rain_road.h"
-
-#define STM_TRANS		0
-#define STM_CONTROLELR	1
-#define STM_SUBORDINATE	2
+#include "sensor.h"
 
 int rain_road_count;
 
@@ -23,13 +20,14 @@ void set_mode_rain_road()
 {
    if (!sensor_info.error_flag.rain_error)
    {
-      if (sensor_info.sensor_value.rain)
+      //if (sensor_info.sensor_value.rain)
+      if (get_sensor_rain())
       {
-         sensor_info.mode[STM_CONTROLELR].mode_rain_road = RAINROAD_MODE_ON;
+         sensor_info.mode[STM_CONTROLLER].mode_rain_road = RAINROAD_MODE_ON;
       }
       else
       {
-         sensor_info.mode[STM_CONTROLELR].mode_rain_road = RAINROAD_MODE_OFF;
+         sensor_info.mode[STM_CONTROLLER].mode_rain_road = RAINROAD_MODE_OFF;
       }
    }
 }
@@ -41,18 +39,20 @@ uint8_t get_mode_rain_road(int board)
 
 void compare_mode_rain_road()
 {
-   if (!sensor_info.error_flag.rain_error)
+
+	if (!sensor_info.error_flag.rain_error)
    {
-      if (get_mode_rain_road(STM_CONTROLELR) == get_mode_rain_road(STM_SUBORDINATE))
+      if (get_mode_rain_road(STM_CONTROLLER) == get_mode_rain_road(STM_SUBORDINATE))
       {
-         sensor_info.mode[STM_TRANS].mode_rain_road = get_mode_rain_road(STM_CONTROLELR);
+         sensor_info.mode[STM_TRANS].mode_rain_road = get_mode_rain_road(STM_CONTROLLER);
          if (rain_road_count > 0)
             rain_road_count--;
       }
       else
       {
+    	 sensor_info.mode[STM_TRANS].mode_rain_road = esp32_receive.rain;
          rain_road_count++;
-         if (rain_road_count > 10)
+         if (rain_road_count > 1000)
          {
             sensor_info.error_flag.rain_error = true;
             sensor_info.mode[STM_TRANS].mode_rain_road = RAINROAD_MODE_ERROR;
@@ -61,6 +61,7 @@ void compare_mode_rain_road()
    }
    else
    {
-      sensor_info.mode[STM_TRANS].mode_rain_road = RAINROAD_MODE_ERROR;
+       sensor_info.mode[STM_TRANS].mode_rain_road = RAINROAD_MODE_ERROR;
    }
+	esp32_info.mode_rain_road = sensor_info.mode[STM_TRANS].mode_rain_road;
 }

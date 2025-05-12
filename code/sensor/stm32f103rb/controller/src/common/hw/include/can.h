@@ -10,7 +10,7 @@
 
 
 #include "hw_def.h"
-
+#include "ap.h"
 
 #ifdef _USE_HW_CAN
 

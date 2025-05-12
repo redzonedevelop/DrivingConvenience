@@ -14,12 +14,10 @@
 
 
 
-gpio_tbl_t gpio_tbl[GPIO_MAX_CH] =
+const gpio_tbl_t gpio_tbl[GPIO_MAX_CH] =
     {
         {GPIOB, GPIO_PIN_5,  _DEF_INPUT, GPIO_PIN_RESET, GPIO_PIN_SET,   true},       // 0. SD CD
         {GPIOA, GPIO_PIN_8,  _DEF_INPUT,       GPIO_PIN_SET,   GPIO_PIN_RESET, _DEF_LOW},   // 1. RAIN
-				{GPIOA, GPIO_PIN_5, _DEF_OUTPUT, GPIO_PIN_SET, GPIO_PIN_RESET, _DEF_LOW},
-
     };
 
 
@@ -67,37 +65,31 @@ bool gpio_pin_mode(uint8_t ch, uint8_t mode)
 		case _DEF_INPUT:
 			GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
 			GPIO_InitStruct.Pull = GPIO_NOPULL;
-		  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 			break;
 
 		case _DEF_INPUT_PULLUP:
 			GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
 			GPIO_InitStruct.Pull = GPIO_PULLUP;
-		  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 			break;
 
 		case _DEF_INPUT_PULLDOWN:
 			GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
 			GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-		  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 			break;
 
 		case _DEF_OUTPUT:
 			GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 			GPIO_InitStruct.Pull = GPIO_NOPULL;
-		  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 			break;
 
 		case _DEF_OUTPUT_PULLUP:
 			GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 			GPIO_InitStruct.Pull = GPIO_PULLUP;
-		  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 			break;
 
 		case _DEF_OUTPUT_PULLDOWN:
 			GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 			GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-		  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 			break;
 
 	}
@@ -206,34 +198,11 @@ void cli_gpio(cli_args_t *args)
     ret = true;
   }
 
-  if (args->argc == 3 && args->isStr(0, "toggle") == true)
-    {
-      uint8_t  ch;
-      uint32_t toggle_time;
-      uint32_t pre_time;
-
-      ch      = args->getData(1);
-      toggle_time = args->getData(2);
-
-      pre_time = millis();
-      while(cliKeepLoop())
-      {
-        if (millis()-pre_time >= toggle_time)
-        {
-          pre_time = millis();
-          gpio_pin_toggle(ch);
-        }
-      }
-      ret = true;
-    }
-
   if (ret != true)
   {
     cliPrintf("gpio show\n");
     cliPrintf("gpio read ch[0~%d]\n", GPIO_MAX_CH-1);
     cliPrintf("gpio write ch[0~%d] 0:1\n", GPIO_MAX_CH-1);
-    cliPrintf("gpio toggle ch[0~%d] time(ms)\n", GPIO_MAX_CH-1);
-
   }
 }
 #endif

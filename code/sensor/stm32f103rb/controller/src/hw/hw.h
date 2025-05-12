@@ -20,7 +20,6 @@
 #include "adc.h"
 #include "gpio.h"
 #include "dht11.h"
-#include "scheduler.h"
 
 void hw_init(void);
 

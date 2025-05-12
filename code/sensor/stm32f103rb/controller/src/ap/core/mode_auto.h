@@ -14,7 +14,7 @@ typedef enum
 {
 	AUTO_MODE_ERROR	= 0b000, // 0
 	AUTO_MODE_OFF	= 0b100,	 // 4
-	AUTO_MODE_ON	= 0b100	 // 5
+	AUTO_MODE_ON	= 0b101	 // 5
 } auto_mode_t;
 
 void mode_auto_init();

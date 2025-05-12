@@ -22,8 +22,7 @@ void hw_init(void)
   cliInit();
   adc_init();
   led_init();
-  gpio_init();
+
   button_init();
   dht11Init();
-
 }

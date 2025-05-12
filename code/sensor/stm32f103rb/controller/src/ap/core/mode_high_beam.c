@@ -6,10 +6,7 @@
  */
 
 #include "mode_high_beam.h"
-
-#define STM_TRANS		0
-#define STM_CONTROLELR	1
-#define STM_SUBORDINATE	2
+#include "sensor.h"
 
 int high_beam_count;
 
@@ -23,15 +20,16 @@ void set_mode_high_beam()
 {
    if (!sensor_info.error_flag.darkness_error)
    {
-      if (sensor_info.sensor_value.darkness)
+      if (get_sensor_darkness())
       {
-         sensor_info.mode[STM_CONTROLELR].mode_high_beam = HIGH_BEAM_MODE_ON;
+         sensor_info.mode[STM_CONTROLLER].mode_high_beam = HIGH_BEAM_MODE_ON;
       }
       else
       {
-         sensor_info.mode[STM_CONTROLELR].mode_high_beam = HIGH_BEAM_MODE_OFF;
+         sensor_info.mode[STM_CONTROLLER].mode_high_beam = HIGH_BEAM_MODE_OFF;
       }
    }
+   esp32_info.mode_high_beam = sensor_info.mode[STM_TRANS].mode_high_beam;
 }
 
 uint8_t get_mode_high_beam(int board)
@@ -43,16 +41,16 @@ void compare_mode_high_beam()
 {
    if (!sensor_info.error_flag.darkness_error)
    {
-      if (get_mode_high_beam(STM_CONTROLELR) == get_mode_high_beam(STM_SUBORDINATE))
+      if (get_mode_high_beam(STM_CONTROLLER) == get_mode_high_beam(STM_SUBORDINATE))
       {
-         sensor_info.mode[STM_TRANS].mode_high_beam = get_mode_high_beam(STM_CONTROLELR);
+         sensor_info.mode[STM_TRANS].mode_high_beam = get_mode_high_beam(STM_CONTROLLER);
          if (high_beam_count > 0)
             high_beam_count--;
       }
       else
       {
          high_beam_count++;
-         if (high_beam_count > 10)
+         if (high_beam_count > 1000)
          {
             sensor_info.error_flag.darkness_error = true;
             sensor_info.mode[STM_TRANS].mode_high_beam = HIGH_BEAM_MODE_ERROR;

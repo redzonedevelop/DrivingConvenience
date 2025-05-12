@@ -154,7 +154,9 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) // can 메시지
 {
   if (hcan->Instance == CAN1)
     {
-      HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &canRxHeader, can1Rx0Data);
+//      HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &canRxHeader, can1Rx0Data);
+	  HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &canRxHeader, &sensor_info.mode[2]);
+
     }
 
 }
