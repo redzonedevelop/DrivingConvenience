@@ -88,26 +88,26 @@ cli_t   cli_node;
 
 
 
-static bool cliUpdate(cli_t *p_cli, uint8_t rx_data);
-static void cliLineClean(cli_t *p_cli);
-static void cliLineAdd(cli_t *p_cli);
-static void cliLineChange(cli_t *p_cli, int8_t key_up);
-static void cliShowPrompt(cli_t *p_cli);
-static void cliToUpper(char *str);
-static bool cliRunCmd(cli_t *p_cli);
-static bool cliParseArgs(cli_t *p_cli);
+static bool cli_update(cli_t *p_cli, uint8_t rx_data);
+static void cli_line_clean(cli_t *p_cli);
+static void cli_line_add(cli_t *p_cli);
+static void cli_line_change(cli_t *p_cli, int8_t key_up);
+static void cli_show_prompt(cli_t *p_cli);
+static void cli_to_upper(char *str);
+static bool cli_run_cmd(cli_t *p_cli);
+static bool cli_parse_args(cli_t *p_cli);
 
-static int32_t  cliArgsGetData(uint8_t index);
-static float    cliArgsGetFloat(uint8_t index);
-static char    *cliArgsGetStr(uint8_t index);
-static bool     cliArgsIsStr(uint8_t index, char *p_str);
-
-
-void cliShowList(cli_args_t *args);
-void cliMemoryDump(cli_args_t *args);
+static int32_t  cli_args_get_data(uint8_t index);
+static float    cli_args_get_float(uint8_t index);
+static char    *cli_args_get_str(uint8_t index);
+static bool     cli_args_is_str(uint8_t index, char *p_str);
 
 
-bool cliInit(void)
+void cli_show_list(cli_args_t *args);
+void cli_memory_dump(cli_args_t *args);
+
+
+bool cli_init(void)
 {
   cli_node.is_open = false;
   cli_node.is_log  = false;
@@ -118,38 +118,38 @@ bool cliInit(void)
   cli_node.hist_line_count = 0;
   cli_node.hist_line_new   = false;
 
-  cli_node.cmd_args.getData  = cliArgsGetData;
-  cli_node.cmd_args.getFloat = cliArgsGetFloat;
-  cli_node.cmd_args.getStr   = cliArgsGetStr;
-  cli_node.cmd_args.isStr    = cliArgsIsStr;
+  cli_node.cmd_args.getData  = cli_args_get_data;
+  cli_node.cmd_args.getFloat = cli_args_get_float;
+  cli_node.cmd_args.getStr   = cli_args_get_str;
+  cli_node.cmd_args.isStr    = cli_args_is_str;
 
-  cliLineClean(&cli_node);
+  cli_line_clean(&cli_node);
 
 
-  cliAdd("help", cliShowList);
-  cliAdd("md"  , cliMemoryDump);
+  cli_add("help", cli_show_list);
+  cli_add("md"  , cli_memory_dump);
 
   return true;
 }
 
-bool cliOpen(uint8_t ch, uint32_t baud)
+bool cli_open(uint8_t ch, uint32_t baud)
 {
   cli_node.ch = ch;
   cli_node.baud = baud;
 
-  cli_node.is_open = uartOpen(ch, baud);
+  cli_node.is_open = uart_open(ch, baud);
 
   return cli_node.is_open;
 }
 
-bool cliOpenLog(uint8_t ch, uint32_t baud)
+bool cli_open_log(uint8_t ch, uint32_t baud)
 {
   bool ret;
 
   cli_node.log_ch = ch;
   cli_node.log_baud = baud;
 
-  ret = uartOpen(ch, baud);
+  ret = uart_open(ch, baud);
 
   if (ret == true)
   {
@@ -158,54 +158,54 @@ bool cliOpenLog(uint8_t ch, uint32_t baud)
   return ret;
 }
 
-bool cliLogClose(void)
+bool cli_log_close(void)
 {
   cli_node.is_log = false;
   return true;
 }
 
-void cliShowLog(cli_t *p_cli)
+void cli_show_log(cli_t *p_cli)
 {
   if (cli_node.is_log == true)
   {
-    uartPrintf(p_cli->log_ch, "Cursor  : %d\n", p_cli->line.cursor);
-    uartPrintf(p_cli->log_ch, "Count   : %d\n", p_cli->line.count);
-    uartPrintf(p_cli->log_ch, "buf_len : %d\n", p_cli->line.buf_len);
-    uartPrintf(p_cli->log_ch, "buf     : %s\n", p_cli->line.buf);
-    uartPrintf(p_cli->log_ch, "line_i  : %d\n", p_cli->hist_line_i);
-    uartPrintf(p_cli->log_ch, "line_lt : %d\n", p_cli->hist_line_last);
-    uartPrintf(p_cli->log_ch, "line_c  : %d\n", p_cli->hist_line_count);
+    uart_printf(p_cli->log_ch, "Cursor  : %d\n", p_cli->line.cursor);
+    uart_printf(p_cli->log_ch, "Count   : %d\n", p_cli->line.count);
+    uart_printf(p_cli->log_ch, "buf_len : %d\n", p_cli->line.buf_len);
+    uart_printf(p_cli->log_ch, "buf     : %s\n", p_cli->line.buf);
+    uart_printf(p_cli->log_ch, "line_i  : %d\n", p_cli->hist_line_i);
+    uart_printf(p_cli->log_ch, "line_lt : %d\n", p_cli->hist_line_last);
+    uart_printf(p_cli->log_ch, "line_c  : %d\n", p_cli->hist_line_count);
 
     for (int i=0; i<p_cli->hist_line_count; i++)
     {
-      uartPrintf(p_cli->log_ch, "buf %d   : %s\n", i, p_cli->line_buf[i].buf);
+      uart_printf(p_cli->log_ch, "buf %d   : %s\n", i, p_cli->line_buf[i].buf);
     }
-    uartPrintf(p_cli->log_ch, "\n");
+    uart_printf(p_cli->log_ch, "\n");
   }
 }
 
-void cliShowPrompt(cli_t *p_cli)
+void cli_show_prompt(cli_t *p_cli)
 {
-  uartPrintf(p_cli->ch, "\n\r");
-  uartPrintf(p_cli->ch, CLI_PROMPT_STR);
+  uart_printf(p_cli->ch, "\n\r");
+  uart_printf(p_cli->ch, CLI_PROMPT_STR);
 }
 
-bool cliMain(void)
+bool cli_main(void)
 {
   if (cli_node.is_open != true)
   {
     return false;
   }
 
-  if (uartAvailable(cli_node.ch) > 0)
+  if (uart_available(cli_node.ch) > 0)
   {
-    cliUpdate(&cli_node, uartRead(cli_node.ch));
+    cli_update(&cli_node, uart_read(cli_node.ch));
   }
 
   return true;
 }
 
-bool cliUpdate(cli_t *p_cli, uint8_t rx_data)
+bool cli_update(cli_t *p_cli, uint8_t rx_data)
 {
   bool ret = false;
   uint8_t tx_buf[8];
@@ -223,14 +223,14 @@ bool cliUpdate(cli_t *p_cli, uint8_t rx_data)
       case CLI_KEY_ENTER:
         if (line->count > 0)
         {
-          cliLineAdd(p_cli);
-          cliRunCmd(p_cli);
+          cli_line_add(p_cli);
+          cli_run_cmd(p_cli);
         }
 
         line->count = 0;
         line->cursor = 0;
         line->buf[0] = 0;
-        cliShowPrompt(p_cli);
+        cli_show_prompt(p_cli);
         break;
 
 
@@ -255,7 +255,7 @@ bool cliUpdate(cli_t *p_cli, uint8_t rx_data)
           line->count--;
           line->buf[line->count] = 0;
 
-          uartPrintf(p_cli->ch, "\x1B[1P");
+          uart_printf(p_cli->ch, "\x1B[1P");
         }
         break;
 
@@ -290,7 +290,7 @@ bool cliUpdate(cli_t *p_cli, uint8_t rx_data)
         if (line->cursor > 0)
         {
           line->cursor--;
-          uartPrintf(p_cli->ch, "\b \b\x1B[1P");
+          uart_printf(p_cli->ch, "\b \b\x1B[1P");
         }
         break;
 
@@ -300,7 +300,7 @@ bool cliUpdate(cli_t *p_cli, uint8_t rx_data)
         {
           if (line->cursor == line->count)
           {
-            uartWrite(p_cli->ch, &rx_data, 1);
+            uart_write(p_cli->ch, &rx_data, 1);
 
             line->buf[line->cursor] = rx_data;
             line->count++;
@@ -321,7 +321,7 @@ bool cliUpdate(cli_t *p_cli, uint8_t rx_data)
             line->cursor++;
             line->buf[line->count] = 0;
 
-            uartPrintf(p_cli->ch, "\x1B[4h%c\x1B[4l", rx_data);
+            uart_printf(p_cli->ch, "\x1B[4h%c\x1B[4l", rx_data);
           }
         }
         break;
@@ -349,7 +349,7 @@ bool cliUpdate(cli_t *p_cli, uint8_t rx_data)
           tx_buf[0] = 0x1B;
           tx_buf[1] = 0x5B;
           tx_buf[2] = rx_data;
-          uartWrite(p_cli->ch, tx_buf, 3);
+          uart_write(p_cli->ch, tx_buf, 3);
         }
       }
 
@@ -362,24 +362,24 @@ bool cliUpdate(cli_t *p_cli, uint8_t rx_data)
         tx_buf[0] = 0x1B;
         tx_buf[1] = 0x5B;
         tx_buf[2] = rx_data;
-        uartWrite(p_cli->ch, tx_buf, 3);
+        uart_write(p_cli->ch, tx_buf, 3);
       }
 
       if (rx_data == CLI_KEY_UP)
       {
-        cliLineChange(p_cli, true);
-        uartPrintf(p_cli->ch, (char *)p_cli->line.buf);
+        cli_line_change(p_cli, true);
+        uart_printf(p_cli->ch, (char *)p_cli->line.buf);
       }
 
       if (rx_data == CLI_KEY_DOWN)
       {
-        cliLineChange(p_cli, false);
-        uartPrintf(p_cli->ch, (char *)p_cli->line.buf);
+        cli_line_change(p_cli, false);
+        uart_printf(p_cli->ch, (char *)p_cli->line.buf);
       }
 
       if (rx_data == CLI_KEY_HOME)
       {
-        uartPrintf(p_cli->ch, "\x1B[%dD", line->cursor);
+        uart_printf(p_cli->ch, "\x1B[%dD", line->cursor);
         line->cursor = 0;
 
         p_cli->state = CLI_RX_SP4;
@@ -392,12 +392,12 @@ bool cliUpdate(cli_t *p_cli, uint8_t rx_data)
         if (line->cursor < line->count)
         {
           mov_len = line->count - line->cursor;
-          uartPrintf(p_cli->ch, "\x1B[%dC", mov_len);
+          uart_printf(p_cli->ch, "\x1B[%dC", mov_len);
         }
         if (line->cursor > line->count)
         {
           mov_len = line->cursor - line->count;
-          uartPrintf(p_cli->ch, "\x1B[%dD", mov_len);
+          uart_printf(p_cli->ch, "\x1B[%dD", mov_len);
         }
         line->cursor = line->count;
         p_cli->state = CLI_RX_SP4;
@@ -411,12 +411,12 @@ bool cliUpdate(cli_t *p_cli, uint8_t rx_data)
 
 
 
-  cliShowLog(p_cli);
+  cli_show_log(p_cli);
 
   return ret;
 }
 
-void cliLineClean(cli_t *p_cli)
+void cli_line_clean(cli_t *p_cli)
 {
   p_cli->line.count   = 0;
   p_cli->line.cursor  = 0;
@@ -424,7 +424,7 @@ void cliLineClean(cli_t *p_cli)
   p_cli->line.buf[0]  = 0;
 }
 
-void cliLineAdd(cli_t *p_cli)
+void cli_line_add(cli_t *p_cli)
 {
 
   p_cli->line_buf[p_cli->hist_line_last] = p_cli->line;
@@ -439,7 +439,7 @@ void cliLineAdd(cli_t *p_cli)
   p_cli->hist_line_new  = true;
 }
 
-void cliLineChange(cli_t *p_cli, int8_t key_up)
+void cli_line_change(cli_t *p_cli, int8_t key_up)
 {
   uint8_t change_i;
 
@@ -452,11 +452,11 @@ void cliLineChange(cli_t *p_cli, int8_t key_up)
 
   if (p_cli->line.cursor > 0)
   {
-    uartPrintf(p_cli->ch, "\x1B[%dD", p_cli->line.cursor);
+    uart_printf(p_cli->ch, "\x1B[%dD", p_cli->line.cursor);
   }
   if (p_cli->line.count > 0)
   {
-    uartPrintf(p_cli->ch, "\x1B[%dP", p_cli->line.count);
+    uart_printf(p_cli->ch, "\x1B[%dP", p_cli->line.count);
   }
 
 
@@ -481,16 +481,16 @@ void cliLineChange(cli_t *p_cli, int8_t key_up)
   p_cli->hist_line_new = false;
 }
 
-bool cliRunCmd(cli_t *p_cli)
+bool cli_run_cmd(cli_t *p_cli)
 {
   bool ret = false;
 
 
-  if (cliParseArgs(p_cli) == true)
+  if (cli_parse_args(p_cli) == true)
   {
-    cliPrintf("\r\n");
+    cli_printf("\r\n");
 
-    cliToUpper(p_cli->argv[0]);
+    cli_to_upper(p_cli->argv[0]);
 
     for (int i=0; i<p_cli->cmd_count; i++)
     {
@@ -507,7 +507,7 @@ bool cliRunCmd(cli_t *p_cli)
   return ret;
 }
 
-bool cliParseArgs(cli_t *p_cli)
+bool cli_parse_args(cli_t *p_cli)
 {
   bool ret = false;
   char *tok;
@@ -539,7 +539,7 @@ bool cliParseArgs(cli_t *p_cli)
   return ret;
 }
 
-void cliPrintf(const char *fmt, ...)
+void cli_printf(const char *fmt, ...)
 {
   va_list arg;
   va_start (arg, fmt);
@@ -550,10 +550,10 @@ void cliPrintf(const char *fmt, ...)
   len = vsnprintf(p_cli->print_buffer, 256, fmt, arg);
   va_end (arg);
 
-  uartWrite(p_cli->ch, (uint8_t *)p_cli->print_buffer, len);
+  uart_write(p_cli->ch, (uint8_t *)p_cli->print_buffer, len);
 }
 
-void cliToUpper(char *str)
+void cli_to_upper(char *str)
 {
   uint16_t i;
   uint8_t  str_ch;
@@ -580,7 +580,7 @@ void cliToUpper(char *str)
   }
 }
 
-int32_t cliArgsGetData(uint8_t index)
+int32_t cli_args_get_data(uint8_t index)
 {
   int32_t ret = 0;
   cli_t *p_cli = &cli_node;
@@ -596,7 +596,7 @@ int32_t cliArgsGetData(uint8_t index)
   return ret;
 }
 
-float cliArgsGetFloat(uint8_t index)
+float cli_args_get_float(uint8_t index)
 {
   float ret = 0.0;
   cli_t *p_cli = &cli_node;
@@ -612,7 +612,7 @@ float cliArgsGetFloat(uint8_t index)
   return ret;
 }
 
-char *cliArgsGetStr(uint8_t index)
+char *cli_args_get_str(uint8_t index)
 {
   char *ret = NULL;
   cli_t *p_cli = &cli_node;
@@ -628,7 +628,7 @@ char *cliArgsGetStr(uint8_t index)
   return ret;
 }
 
-bool cliArgsIsStr(uint8_t index, char *p_str)
+bool cli_args_is_str(uint8_t index, char *p_str)
 {
   bool ret = false;
   cli_t *p_cli = &cli_node;
@@ -647,12 +647,12 @@ bool cliArgsIsStr(uint8_t index, char *p_str)
   return ret;
 }
 
-bool cliKeepLoop(void)
+bool cli_keep_loop(void)
 {
   cli_t *p_cli = &cli_node;
 
 
-  if (uartAvailable(p_cli->ch) == 0)
+  if (uart_available(p_cli->ch) == 0)
   {
     return true;
   }
@@ -662,7 +662,7 @@ bool cliKeepLoop(void)
   }
 }
 
-bool cliAdd(const char *cmd_str, void (*p_func)(cli_args_t *))
+bool cli_add(const char *cmd_str, void (*p_func)(cli_args_t *))
 {
   bool ret = true;
   cli_t *p_cli = &cli_node;
@@ -678,31 +678,31 @@ bool cliAdd(const char *cmd_str, void (*p_func)(cli_args_t *))
   strcpy(p_cli->cmd_list[index].cmd_str, cmd_str);
   p_cli->cmd_list[index].cmd_func = p_func;
 
-  cliToUpper(p_cli->cmd_list[index].cmd_str);
+  cli_to_upper(p_cli->cmd_list[index].cmd_str);
 
   p_cli->cmd_count++;
 
   return ret;
 }
 
-void cliShowList(cli_args_t *args)
+void cli_show_list(cli_args_t *args)
 {
   cli_t *p_cli = &cli_node;
 
 
-  cliPrintf("\r\n");
-  cliPrintf("---------- cmd list ---------\r\n");
+  cli_printf("\r\n");
+  cli_printf("---------- cmd list ---------\r\n");
 
   for (int i=0; i<p_cli->cmd_count; i++)
   {
-    cliPrintf(p_cli->cmd_list[i].cmd_str);
-    cliPrintf("\r\n");
+    cli_printf(p_cli->cmd_list[i].cmd_str);
+    cli_printf("\r\n");
   }
 
-  cliPrintf("-----------------------------\r\n");
+  cli_printf("-----------------------------\r\n");
 }
 
-void cliMemoryDump(cli_args_t *args)
+void cli_memory_dump(cli_args_t *args)
 {
   int idx, size = 16;
   unsigned int *addr;
@@ -716,7 +716,7 @@ void cliMemoryDump(cli_args_t *args)
 
   if(args->argc < 1)
   {
-    cliPrintf(">> md addr [size] \n");
+    cli_printf(">> md addr [size] \n");
     return;
   }
 
@@ -727,18 +727,18 @@ void cliMemoryDump(cli_args_t *args)
   addr   = (unsigned int *)strtoul((const char * ) argv[0], (char **)NULL, (int) 0);
   ascptr = (unsigned int *)addr;
 
-  cliPrintf("\n   ");
+  cli_printf("\n   ");
   for (idx = 0; idx<size; idx++)
   {
     if((idx%4) == 0)
     {
-      cliPrintf(" 0x%08X: ", (unsigned int)addr);
+      cli_printf(" 0x%08X: ", (unsigned int)addr);
     }
-    cliPrintf(" 0x%08X", *(addr));
+    cli_printf(" 0x%08X", *(addr));
 
     if ((idx%4) == 3)
     {
-      cliPrintf ("  |");
+      cli_printf ("  |");
       for (idx1= 0; idx1< 4; idx1++)
       {
         memcpy((char *)asc, (char *)ascptr, 4);
@@ -746,16 +746,16 @@ void cliMemoryDump(cli_args_t *args)
         {
           if (asc[i] > 0x1f && asc[i] < 0x7f)
           {
-            cliPrintf("%c", asc[i]);
+            cli_printf("%c", asc[i]);
           }
           else
           {
-            cliPrintf(".");
+            cli_printf(".");
           }
         }
         ascptr+=1;
       }
-      cliPrintf("|\n   ");
+      cli_printf("|\n   ");
     }
     addr++;
   }

@@ -26,7 +26,7 @@ led_tbl_t led_tbl[LED_MAX_CH] =
 
 
 #ifdef _USE_HW_CLI
-static void cliLed(cli_args_t *args);
+static void cli_led(cli_args_t *args);
 #endif
 
 
@@ -55,7 +55,7 @@ bool led_init(void)
   }
 
 #ifdef _USE_HW_CLI
-  cliAdd("led", cliLed);
+  cli_add("led", cli_led);
 #endif
 
 	return ret;
@@ -86,7 +86,7 @@ void led_toggle(uint8_t ch)
 
 
 #ifdef _USE_HW_CLI
-void cliLed(cli_args_t *args)
+void cli_led(cli_args_t *args)
 {
   bool ret = false;
 
@@ -106,7 +106,7 @@ void cliLed(cli_args_t *args)
     }
 
     pre_time = millis();
-    while(cliKeepLoop())
+    while(cli_keep_loop())
     {
       if (millis()-pre_time >= toggle_time)
       {
@@ -121,7 +121,7 @@ void cliLed(cli_args_t *args)
 
   if (ret != true)
   {
-    cliPrintf("led toggle ch[1~%d] time(ms)\n", LED_MAX_CH);
+    cli_printf("led toggle ch[1~%d] time(ms)\n", LED_MAX_CH);
   }
 }
 #endif

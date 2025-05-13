@@ -34,13 +34,13 @@ typedef struct
 } cli_args_t;
 
 
-bool cliInit(void);
-bool cliOpen(uint8_t ch, uint32_t baud);
-bool cliOpenLog(uint8_t ch, uint32_t baud);
-bool cliMain(void);
-void cliPrintf(const char *fmt, ...);
-bool cliAdd(const char *cmd_str, void (*p_func)(cli_args_t *));
-bool cliKeepLoop(void);
+bool cli_init(void);
+bool cli_open(uint8_t ch, uint32_t baud);
+bool cli_open_log(uint8_t ch, uint32_t baud);
+bool cli_main(void);
+void cli_printf(const char *fmt, ...);
+bool cli_add(const char *cmd_str, void (*p_func)(cli_args_t *));
+bool cli_keep_loop(void);
 
 
 #endif
