@@ -1,0 +1,986 @@
+/* USER CODE BEGIN Header */
+/**
+  ******************************************************************************
+  * @file           : main.c
+  * @brief          : Main program body
+  ******************************************************************************
+  * @attention
+  *
+  * Copyright (c) 2025 STMicroelectronics.
+  * All rights reserved.
+  *
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
+  *
+  ******************************************************************************
+  */
+/* USER CODE END Header */
+/* Includes ------------------------------------------------------------------*/
+#include "main.h"
+#include "can.h"
+#include "dma.h"
+#include "tim.h"
+#include "usart.h"
+#include "gpio.h"
+
+/* Private includes ----------------------------------------------------------*/
+/* USER CODE BEGIN Includes */
+
+/* USER CODE END Includes */
+
+/* Private typedef -----------------------------------------------------------*/
+/* USER CODE BEGIN PTD */
+typedef enum {
+    DAY = 0,
+    NIGHT = 1
+} LowBeam;
+
+typedef enum {
+    CITY = 0,
+    COUNTRY = 1,
+    HIGHWAY = 2
+}DriveMode;
+
+typedef enum {
+    WEAK = 0,
+    STRONG = 1
+} RainRoad;
+
+typedef enum {
+	 H_OFF = 0,
+	 H_ON = 1
+}HighBeam;
+
+typedef enum {
+    CLEAN = 0,
+    FOG = 1
+}FogLight;
+
+typedef enum {
+    OFF = 0,
+    BOTH = 1,
+	RIGHT = 2,
+	LEFT = 3
+}CornerLight;
+typedef enum {
+	S_OFF = 0,
+	S_BOTH = 1,
+	S_RIGHT = 2,
+	S_LEFT = 3
+}SeatMode;
+/* USER CODE END PTD */
+
+/* Private define ------------------------------------------------------------*/
+/* USER CODE BEGIN PD */
+#define LED_NUM 8  // 제어할 WS2812 개수
+#define LED_BIT_LEN (24 * LED_NUM)
+#define BIT_OFFSET 80
+
+#define WS2812_HIGH 44
+#define WS2812_LOW  25
+
+#define THRESHOLD 5
+
+#define LCORNER_ON()   	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_SET)
+#define LCORNER_OFF()  	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET)
+#define RCORNER_ON()   	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_SET)
+#define RCORNER_OFF()  	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, GPIO_PIN_RESET)
+#define FOG_ON()		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET)
+#define FOG_OFF()		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET)
+/* USER CODE END PD */
+
+/* Private macro -------------------------------------------------------------*/
+/* USER CODE BEGIN PM */
+
+/* USER CODE END PM */
+
+/* Private variables ---------------------------------------------------------*/
+
+/* USER CODE BEGIN PV */
+uint16_t ws2812_lbuffer[BIT_OFFSET+LED_BIT_LEN ];
+uint16_t ws2812_rbuffer[BIT_OFFSET+LED_BIT_LEN ];
+uint16_t ws2812_hbuffer[BIT_OFFSET+LED_BIT_LEN ];
+//uint8_t red = 255, green = 255, blue = 255;    // 빨간색
+uint8_t lcolors[LED_NUM][3];
+uint8_t rcolors[LED_NUM][3];
+uint8_t hcolors[LED_NUM][3];
+uint8_t change_flag;
+/* USER CODE END PV */
+
+/* Private function prototypes -----------------------------------------------*/
+void SystemClock_Config(void);
+/* USER CODE BEGIN PFP */
+
+/* USER CODE END PFP */
+
+/* Private user code ---------------------------------------------------------*/
+/* USER CODE BEGIN 0 */
+
+void seat_control(SeatMode mode){
+
+	static uint8_t soff_count = 0;
+	static uint8_t sboth_count = 0;
+	static uint8_t sright_count = 0;
+	static uint8_t sleft_count = 0;
+
+	static SeatMode last_input = -1;
+	static SeatMode current_mode = -1;
+	if (mode != last_input)
+	{
+		soff_count = 0;
+		sboth_count = 0;
+		sright_count = 0;
+		sleft_count = 0;
+	}
+	switch(mode)
+	{
+	case S_OFF:
+		soff_count++;
+		break;
+	case S_BOTH:
+		sboth_count++;
+		break;
+	case S_RIGHT:
+		sright_count++;
+		break;
+	case S_LEFT:
+		sleft_count++;
+		break;
+	}
+
+	if (soff_count >= THRESHOLD && current_mode !=S_OFF)
+	{
+		TIM3->CCR3 = 1000;
+		TIM3->CCR4 = 400;
+
+		current_mode = S_OFF;
+		soff_count = 0;
+		sboth_count = 0;
+		sright_count = 0;
+		sleft_count = 0;
+	}
+
+	if (sboth_count >= THRESHOLD && current_mode != S_BOTH)
+	{
+		TIM3->CCR3 = 750;
+		TIM3->CCR4 = 750;
+
+		current_mode = S_BOTH;
+		soff_count = 0;
+		sboth_count = 0;
+		sright_count = 0;
+		sleft_count = 0;
+	}
+	if (sright_count >= THRESHOLD && current_mode != S_RIGHT)
+	{
+		TIM3->CCR3 = 1000;
+		TIM3->CCR4 = 750;
+
+		current_mode = S_RIGHT;
+		soff_count = 0;
+		sboth_count = 0;
+		sright_count = 0;
+		sleft_count = 0;
+	}
+	if (sleft_count >= THRESHOLD && current_mode != S_LEFT)
+	{
+
+		TIM3->CCR3 = 750;
+		TIM3->CCR4 = 400;
+		current_mode = S_LEFT;
+		soff_count = 0;
+		sboth_count = 0;
+		sright_count = 0;
+		sleft_count = 0;
+	}
+
+	last_input = mode;
+
+}
+void can_init(filter_mask,filter_id){
+
+	filter_init(filter_mask, filter_id);
+	HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING); // 수신 인터럽트 ON
+	HAL_CAN_Start(&hcan); // can 모듈 시작
+}
+void ws2812_set_lowbeam_colors(uint8_t (*lcolors)[3],uint8_t (*rcolors)[3])  // colors[i][0]=R, [1]=G, [2]=B
+
+{
+    uint32_t i = 0;
+    for (int led = 0; led < LED_NUM; led++)
+    {
+        uint8_t g = lcolors[led][1];
+        uint8_t r = lcolors[led][0];
+        uint8_t b = lcolors[led][2];
+
+        for (; i <  80; i++) ws2812_lbuffer[i] = 0;
+        for (int8_t bit = 7; bit >= 0; bit--) ws2812_lbuffer[i++] = (g >> bit) & 1 ? WS2812_HIGH : WS2812_LOW;
+        for (int8_t bit = 7; bit >= 0; bit--) ws2812_lbuffer[i++] = (r >> bit) & 1 ? WS2812_HIGH : WS2812_LOW;
+        for (int8_t bit = 7; bit >= 0; bit--) ws2812_lbuffer[i++] = (b >> bit) & 1 ? WS2812_HIGH : WS2812_LOW;
+    }
+
+    i = 0;
+
+	for (int led = 0; led < LED_NUM; led++)
+	{
+		uint8_t g = rcolors[led][1];
+		uint8_t r = rcolors[led][0];
+		uint8_t b = rcolors[led][2];
+
+		for (; i < 80; i++) ws2812_rbuffer[i] = 0;
+		for (int8_t bit = 7; bit >= 0; bit--) ws2812_rbuffer[i++] = (g >> bit) & 1 ? WS2812_HIGH : WS2812_LOW;
+		for (int8_t bit = 7; bit >= 0; bit--) ws2812_rbuffer[i++] = (r >> bit) & 1 ? WS2812_HIGH : WS2812_LOW;
+		for (int8_t bit = 7; bit >= 0; bit--) ws2812_rbuffer[i++] = (b >> bit) & 1 ? WS2812_HIGH : WS2812_LOW;
+
+	}
+}
+void ws2812_set_highbeam_colors(uint8_t (*hcolors)[3])  // colors[i][0]=R, [1]=G, [2]=B
+
+{
+    uint32_t i = 0;
+    for (int led = 0; led < LED_NUM; led++)
+    {
+        uint8_t g = hcolors[led][1];
+        uint8_t r = hcolors[led][0];
+        uint8_t b = hcolors[led][2];
+
+        for (; i <  80; i++) ws2812_hbuffer[i] = 0;
+        for (int8_t bit = 7; bit >= 0; bit--) ws2812_hbuffer[i++] = (g >> bit) & 1 ? WS2812_HIGH : WS2812_LOW;
+        for (int8_t bit = 7; bit >= 0; bit--) ws2812_hbuffer[i++] = (r >> bit) & 1 ? WS2812_HIGH : WS2812_LOW;
+        for (int8_t bit = 7; bit >= 0; bit--) ws2812_hbuffer[i++] = (b >> bit) & 1 ? WS2812_HIGH : WS2812_LOW;
+    }
+
+
+}
+void ws2812_show(void)
+{
+    // DMA로 PWM 전송 시작
+    HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_1, (uint32_t*)ws2812_lbuffer, LED_BIT_LEN + BIT_OFFSET);
+    HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_2, (uint32_t*)ws2812_rbuffer, LED_BIT_LEN + BIT_OFFSET);
+    HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_2, (uint32_t*)ws2812_hbuffer, LED_BIT_LEN + BIT_OFFSET);
+    // reset time 확보를 위해 전송 후 잠시 대기
+    HAL_Delay(2);  // 최소 50µs 이상 필요 (1ms이면 충분)
+}
+void set_lowbeam(uint8_t brightness)
+{
+	for (int i = 0; i < LED_NUM; i++)
+	{
+		lcolors[i][0] = lcolors[i][1] = lcolors[i][2] = brightness;
+		rcolors[i][0] = rcolors[i][1] = rcolors[i][2] = brightness;
+	}
+	ws2812_set_lowbeam_colors(lcolors,rcolors);
+	ws2812_show();
+}
+void set_highbeam(uint8_t brightness)
+{
+	for (int i = 0; i < LED_NUM; i++)
+	{
+		hcolors[i][0] = hcolors[i][1] = hcolors[i][2] = brightness;
+	}
+	ws2812_set_highbeam_colors(hcolors);
+	ws2812_show();
+}
+void light_init(void)
+{
+	ws2812_scroll_init();
+	set_lowbeam(255);
+	set_highbeam(255);
+	HAL_Delay(500);
+
+	set_lowbeam(125);
+	set_highbeam(125);
+	HAL_Delay(500);
+
+	set_lowbeam(0);
+	set_highbeam(0);
+	HAL_Delay(500);
+}
+void ws2812_scroll_init(void)// LED 시작시에 애니메이션 기능을 넣으면 좋지않을까? -> 보완해야함
+{
+//	while (1)
+//	{
+//	for (int i = 0; i < LED_NUM; i++)
+//	{
+//	// 모든 LED 끄기
+//		for (int j = 0; j < LED_NUM; j++)
+//		{
+//		  lcolors[j][0] = lcolors[j][1] = lcolors[j][2] = 0;
+//		  rcolors[j][0] = rcolors[j][1] = rcolors[j][2] = 0;
+//		}
+//
+//		// 현재 위치만 흰색
+//		lcolors[i][0] = rcolors[i][0] = 255;  // R
+//		lcolors[i][1] = rcolors[i][0] = 255;  // G
+//		lcolors[i][2] = rcolors[i][0] = 255;  // B
+//
+//		ws2812_set_lowbeam_colors(lcolors,rcolors);
+//		ws2812_show();
+//
+//		HAL_Delay(100);  // 속도 조절
+//		}
+//	}
+	for (int i = 0; i < LED_NUM; i++) {
+		  	        lcolors[i][0] = lcolors[i][1] = lcolors[i][2] = 0;
+		  	        rcolors[i][0] = rcolors[i][1] = rcolors[i][2] = 0;
+		  	    }
+
+		  	    for (int i = 0; i < LED_NUM; i++) {
+		  	        // i번째까지 흰색으로 설정
+		  	        for (int j = 0; j <= i; j++) {
+		  	            lcolors[j][0] = lcolors[j][1] = lcolors[j][2] = 255;  // 왼쪽
+		  	            rcolors[j][0] = rcolors[j][1] = rcolors[j][2] = 255;  // 오른쪽
+		  	        }
+
+		  	        ws2812_set_lowbeam_colors(lcolors, rcolors);
+		  	        ws2812_show();
+		  	        HAL_Delay(100);  // 속도 조절
+		  	    }
+}
+
+void low_beam_power_control(LowBeam mode) // LED를 0%와 70%로 토글
+{
+	static uint8_t day_count = 0;
+	static uint8_t night_count = 0;
+	static LowBeam last_input = -1;
+	static LowBeam current_mode = -1;
+	if (mode != last_input)
+	{
+		day_count = 0;
+		night_count = 0;
+	}
+	switch(mode)
+	{
+	case DAY:
+		day_count++;
+		break;
+	case NIGHT:
+		night_count++;
+		break;
+	}
+
+
+	if (day_count >= THRESHOLD && current_mode !=DAY)
+	{
+		uint8_t brightness = 0;
+		set_lowbeam(brightness);
+		current_mode = DAY;
+		day_count = 0;
+		night_count = 0;
+	}
+
+	if (night_count >= THRESHOLD && current_mode != NIGHT)
+	{
+		uint8_t brightness = 178;
+		set_lowbeam(brightness);
+		current_mode = NIGHT;
+		day_count = 0;
+		night_count = 0;
+	}
+
+	last_input = mode;
+}
+
+void driving_mode_change(DriveMode mode) // 스텝모터 드라이버가 없어서 보류
+{
+	static uint8_t city_count = 0;
+	static uint8_t country_count = 0;
+	static uint8_t highway_count = 0;
+
+	static DriveMode last_input = -1;
+	static DriveMode current_mode = -1;
+	if (mode != last_input)
+	{
+		city_count = 0;
+		country_count = 0;
+		highway_count = 0;
+	}
+	switch(mode)
+	{
+	case CITY:
+		city_count++;
+		break;
+	case COUNTRY:
+		country_count++;
+		break;
+	case HIGHWAY:
+		highway_count++;
+		break;
+	}
+
+	if (city_count >= THRESHOLD && current_mode !=CITY)
+	{
+
+		current_mode = CITY;
+		city_count = 0;
+		country_count = 0;
+		highway_count = 0;
+
+	}
+
+	if (country_count >= THRESHOLD && current_mode != COUNTRY)
+	{
+		if(current_mode == HIGHWAY)
+		{
+			rotate_rmotor(1, 5, 100); // 반시계 방향 100스텝
+			rotate_lmotor(0, 5, 100); // 시계 방향 100스텝
+		}
+
+		current_mode = COUNTRY;
+		city_count = 0;
+		country_count = 0;
+		highway_count = 0;
+	}
+	if (highway_count >= THRESHOLD && current_mode != HIGHWAY)
+	{
+
+		rotate_rmotor(0, 5, 100); // 시계 방향 100스텝
+		rotate_lmotor(1, 5, 100); // 반시계 방향 100스텝
+
+		current_mode = HIGHWAY;
+		city_count = 0;
+		country_count = 0;
+		highway_count = 0;
+	}
+
+
+	last_input = mode;
+
+}
+
+void rainroad_mode_change(RainRoad mode) // LED의 밝기를 70% 와 100%로 토글
+{
+    static uint8_t weak_count = 0;
+    static uint8_t strong_count = 0;
+    static RainRoad last_input = -1;
+    static RainRoad current_mode = -1;
+    if (mode != last_input)
+    {
+		weak_count = 0;
+		strong_count = 0;
+    }
+
+    switch(mode)
+    {
+    case WEAK:
+    	weak_count++;
+    	break;
+    case STRONG:
+    	strong_count++;
+    	break;
+    }
+
+    if (weak_count >= THRESHOLD && current_mode!=WEAK)
+    {
+		uint8_t brightness = 178;
+		set_lowbeam(brightness);
+		current_mode = WEAK;
+		weak_count = 0;
+		strong_count = 0;
+	}
+
+	if (strong_count >= THRESHOLD && current_mode!=STRONG)
+	{
+		uint8_t brightness = 255;
+		set_lowbeam(brightness);
+		current_mode = STRONG;
+		weak_count = 0;
+		strong_count = 0;
+	}
+
+	last_input = mode;
+
+}
+
+void high_beam_power_control(HighBeam mode)
+{
+	static uint8_t on_count = 0;
+	static uint8_t off_count = 0;
+	static HighBeam last_input = -1;
+	static HighBeam current_mode = -1;
+	if (mode != last_input)
+	{
+		on_count = 0;
+		off_count = 0;
+	}
+	switch(mode)
+	{
+	case H_ON:
+		on_count++;
+		break;
+	case H_OFF:
+		off_count++;
+		break;
+	}
+
+
+	if (on_count >= THRESHOLD && current_mode !=H_ON)
+	{
+		uint8_t brightness = 255;
+		set_highbeam(brightness);
+		current_mode = H_ON;
+		on_count = 0;
+		off_count = 0;
+	}
+
+	if (off_count >= THRESHOLD && current_mode != H_OFF)
+	{
+		uint8_t brightness = 0;
+		set_highbeam(brightness);
+		current_mode = H_OFF;
+		on_count = 0;
+		off_count = 0;
+	}
+
+	last_input = mode;
+}
+
+void foglight_power_control(FogLight mode)
+{
+	static uint8_t clean_count = 0;
+	static uint8_t fog_count = 0;
+	static FogLight last_input = -1;
+	static FogLight current_mode = -1;
+	if (mode != last_input)
+	{
+		clean_count = 0;
+		fog_count = 0;
+	}
+	switch(mode)
+	{
+	case CLEAN:
+		clean_count++;
+		break;
+	case FOG:
+		fog_count++;
+		break;
+	}
+
+
+	if (clean_count >= THRESHOLD && current_mode !=CLEAN)
+	{
+		FOG_OFF();
+		//안개등 작동 off
+		current_mode = CLEAN;
+		clean_count = 0;
+		fog_count = 0;
+	}
+
+	if (fog_count >= THRESHOLD && current_mode != FOG)
+	{
+		FOG_ON();
+		//안개등 작동 on
+		current_mode = FOG;
+		clean_count = 0;
+		fog_count = 0;
+	}
+
+	last_input = mode;
+}
+
+void cornerlight_power_control(CornerLight mode)
+{
+	static uint8_t off_count = 0;
+	static uint8_t both_count = 0;
+	static uint8_t right_count = 0;
+	static uint8_t left_count = 0;
+
+	static CornerLight last_input = -1;
+	static CornerLight current_mode = -1;
+	if (mode != last_input)
+	{
+		off_count = 0;
+		both_count = 0;
+		right_count = 0;
+		left_count = 0;
+	}
+	switch(mode)
+	{
+	case OFF:
+		off_count++;
+		break;
+	case BOTH:
+		both_count++;
+		break;
+	case RIGHT:
+		right_count++;
+		break;
+	case LEFT:
+		left_count++;
+		break;
+	}
+
+	if (off_count >= THRESHOLD && current_mode !=OFF)
+	{
+		LCORNER_OFF();
+		RCORNER_OFF();
+
+		current_mode = OFF;
+		off_count = 0;
+		both_count = 0;
+		right_count = 0;
+		left_count = 0;
+	}
+
+	if (both_count >= THRESHOLD && current_mode != BOTH)
+	{
+		LCORNER_ON();
+		RCORNER_ON();
+
+		current_mode = BOTH;
+		off_count = 0;
+		both_count = 0;
+		right_count = 0;
+		left_count = 0;
+	}
+	if (right_count >= THRESHOLD && current_mode != RIGHT)
+	{
+		LCORNER_OFF();
+		RCORNER_ON();
+
+		current_mode = RIGHT;
+		off_count = 0;
+		both_count = 0;
+		right_count = 0;
+		left_count = 0;
+	}
+	if (left_count >= THRESHOLD && current_mode != LEFT)
+	{
+		LCORNER_ON();
+		RCORNER_OFF();
+
+		current_mode = LEFT;
+		off_count = 0;
+		both_count = 0;
+		right_count = 0;
+		left_count = 0;
+	}
+
+	last_input = mode;
+}
+
+void lstep_motor(uint8_t step)
+{
+    HAL_GPIO_WritePin(LSTEPA_GPIO_Port, LSTEPA_Pin, (step == 0) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(LSTEPB_GPIO_Port, LSTEPB_Pin, (step == 1) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(LSTEPC_GPIO_Port, LSTEPC_Pin, (step == 2) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(LSTEPD_GPIO_Port, LSTEPD_Pin, (step == 3) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+
+}
+void rstep_motor(uint8_t step)
+{
+
+    HAL_GPIO_WritePin(RSTEPA_GPIO_Port, RSTEPA_Pin, (step == 0) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(RSTEPB_GPIO_Port, RSTEPB_Pin, (step == 1) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(RSTEPC_GPIO_Port, RSTEPC_Pin, (step == 2) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(RSTEPD_GPIO_Port, RSTEPD_Pin, (step == 3) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+}
+
+
+void rotate_lmotor(uint8_t dir, uint16_t delay_ms, uint16_t steps)
+{
+    for (int i = 0; i < steps; i++) {
+        uint8_t step = dir ? (i % 4) : (3 - (i % 4));
+        lstep_motor(step);
+        HAL_Delay(delay_ms);
+    }
+}
+void rotate_rmotor(uint8_t dir, uint16_t delay_ms, uint16_t steps)
+{
+    for (int i = 0; i < steps; i++) {
+        uint8_t step = dir ? (i % 4) : (3 - (i % 4));
+        rstep_motor(step);
+        HAL_Delay(delay_ms);
+    }
+}
+void change_state(){
+	low_beam_power_control(can1Rx0Data[0]);
+	driving_mode_change(can1Rx0Data[1]);
+	rainroad_mode_change(can1Rx0Data[2]);
+	high_beam_power_control(can1Rx0Data[3]);
+	foglight_power_control(can1Rx0Data[4]);
+	cornerlight_power_control(can1Rx0Data[5]);
+	seat_control(can1Rx0Data[6]);
+
+}
+void change_state1(uint8_t* data){
+	low_beam_power_control(data[0]);
+	driving_mode_change(data[1]);
+	rainroad_mode_change(data[2]);
+	high_beam_power_control(data[3]);
+	foglight_power_control(data[4]);
+	cornerlight_power_control(data[5]);
+	seat_control(data[6]);
+
+}
+void function(uint8_t data){
+	for(int i=0;i<5;i++){
+	  //로우빔 드라이빙모드 레인 하이빔 안개 코너 시트 /처음 라이트 모드
+
+	  change_state1(data);
+	  HAL_Delay(200);
+  }
+}
+/* USER CODE END 0 */
+
+/**
+  * @brief  The application entry point.
+  * @retval int
+  */
+int main(void)
+{
+
+  /* USER CODE BEGIN 1 */
+
+  /* USER CODE END 1 */
+
+  /* MCU Configuration--------------------------------------------------------*/
+
+  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+  HAL_Init();
+
+  /* USER CODE BEGIN Init */
+
+  /* USER CODE END Init */
+
+  /* Configure the system clock */
+  SystemClock_Config();
+
+  /* USER CODE BEGIN SysInit */
+
+  /* USER CODE END SysInit */
+
+  /* Initialize all configured peripherals */
+  MX_GPIO_Init();
+  MX_DMA_Init();
+  MX_TIM3_Init();
+  MX_USART2_UART_Init();
+  MX_TIM2_Init();
+  MX_TIM1_Init();
+  MX_CAN_Init();
+  /* USER CODE BEGIN 2 */
+  can_init(0x000,0x000);
+  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_3);
+  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4);
+
+  light_init();
+//  rotate_rmotor(1, 5, 100); // 반시계 방향 100스텝
+//rotate_lmotor(0, 5, 100); // 시계 방향 100스텝
+//  uint8_t data1[8] = {0,0,0,1,0,0,0,0};
+//  function(data1);
+//  uint8_t data2[8] = {1,1,0,1,0,0,0,0};
+//  function(data2);
+//  uint8_t data3[8] = {1,1,0,0,0,0,0,0};
+//  function(data3);
+//  uint8_t data4[8] = {1,2,0,0,0,0,1,0};
+//  function(data4);
+//  uint8_t data5[8] = {1,1,1,0,1,0,0,0};
+//  function(data5);
+//  uint8_t data6[8] = {1,1,1,0,1,2,2,0};
+//  function(data6);
+//  uint8_t data7[8] = {1,1,1,0,1,3,3,0};
+//  function(data7);
+//  uint8_t data8[8] = {0,0,0,1,0,0,0,0};
+//  function(data8);
+  for(int i=0;i<5;i++){
+	  uint8_t data[8] = {0,0,0,0,0,0,0,0};//로우빔 드라이빙모드 레인 하이빔 안개 코너 시트 /처음 라이트 모드
+
+	  change_state1(data);
+	  HAL_Delay(300);
+  }
+  for(int i=0;i<5;i++){
+  	  uint8_t data[8] = {1,1,0,0,0,0,0,0};//로우빔 드라이빙모드 레인 하이빔 안개 코너 시트 /라이트 온
+
+  	change_state1(data);
+  	  HAL_Delay(100);
+    }
+  for(int i=0;i<5;i++){
+	  uint8_t data[8] = {1,1,0,1,0,0,0,0};//로우빔 드라이빙모드 레인 하이빔 안개 코너 시트 /상향등 온
+
+	  change_state1(data);
+	  HAL_Delay(100);
+  }
+  for(int i=0;i<5;i++){
+  	  uint8_t data[8] = {1,2,0,1,0,0,1,0};//로우빔 드라이빙모드 레인 하이빔 안개 코너 시트 /고속도로모드 온
+
+  	change_state1(data);
+  	  HAL_Delay(100);
+    }
+  for(int i=0;i<5;i++){
+	  uint8_t data[8] = {1,1,1,1,1,0,0,0};//로우빔 드라이빙모드 레인 하이빔 안개 코너 시트 /고속도로모드 오프
+	  change_state1(data);
+	  HAL_Delay(100);
+  }
+  for(int i=0;i<5;i++){
+  	  uint8_t data[8] = {1,1,1,1,1,3,2,0};//로우빔 드라이빙모드 레인 하이빔 안개 코너 시트 /좌코너
+  	change_state1(data);
+  	  HAL_Delay(100);
+    }
+  for(int i=0;i<5;i++){
+	  uint8_t data[8] = {1,1,1,1,1,2,3,0};//로우빔 드라이빙모드 레인 하이빔 안개 코너 시트 /우코너
+	  change_state1(data);
+	  HAL_Delay(100);
+  }
+  for(int i=0;i<5;i++){
+  	  uint8_t data[8] = {0,0,0,0,0,0,0,0};//로우빔 드라이빙모드 레인 하이빔 안개 코너 시트 /기본모드
+  	  change_state1(data);
+  	  HAL_Delay(100);
+    }
+
+
+
+
+
+
+
+  /* USER CODE END 2 */
+
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
+  while (1)
+  {
+	  if(change_flag == 1){
+		  change_state();
+		  HAL_Delay(100);
+		  change_flag = 0;
+	  }
+
+//	  low_beam_power_control(DAY);
+
+//	  uint8_t data[8] ={0,0,0,0,0,0,0,0};
+//	  for(int i=0;i<10;i++){
+//		  send_message(0x106, data);
+//		  HAL_Delay(100);
+//	  }
+//	  data[6] = 1;
+//	  for(int i=0;i<10;i++){
+//		  send_message(0x106, data);
+//		  HAL_Delay(100);
+//	  }
+//	  data[6] = 2;
+//	  for(int i=0;i<10;i++){
+//		  send_message(0x106, data);
+//		  HAL_Delay(100);
+//	  }
+//	  data[6] = 3;
+//	  for(int i=0;i<10;i++){
+//		  send_message(0x106, data);
+//		  HAL_Delay(100);
+//	  }
+
+//	  driving_mode_change(HIGHWAY);
+//		rotate_lmotor(0, 5, 100); // 반시계 방향 100스텝
+//		HAL_Delay(100);
+//		rotate_rmotor(1, 5, 100); // 시계 방향 100스텝
+//		HAL_Delay(100);
+
+    /* USER CODE END WHILE */
+
+    /* USER CODE BEGIN 3 */
+  }
+  /* USER CODE END 3 */
+}
+
+/**
+  * @brief System Clock Configuration
+  * @retval None
+  */
+void SystemClock_Config(void)
+{
+  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+
+  /** Initializes the RCC Oscillators according to the specified parameters
+  * in the RCC_OscInitTypeDef structure.
+  */
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI_DIV2;
+  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL16;
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Initializes the CPU, AHB and APB buses clocks
+  */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+}
+
+/* USER CODE BEGIN 4 */
+void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
+{
+//   if(hcan->Instance == CAN1)
+//   {
+//      HAL_CAN_GetRxMessage(&hcan, CAN_RX_FIFO0, &canRxHeader, &can1Rx0Data[0]);
+////      if(canRxHeader.StdId == 0x104){
+////    	  return;
+////      }
+//      can1_rx0_flag += 1;
+//   }
+	if (hcan->Instance == CAN1)
+	  {
+
+	    char uartBuf[100];
+	    change_flag = 1;
+		HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &canRxHeader, can1Rx0Data);
+		for(int i=0;i<8;i++){
+			can1Rx0Data[i] -=4;
+		}
+	    // 메시지를 문자열로 변환
+	    snprintf(uartBuf, sizeof(uartBuf),
+	             "CAN ID: 0x%03X | DATA: %02X %02X %02X %02X %02X %02X %02X %02X\r\n",
+				 canRxHeader.StdId,
+				 can1Rx0Data[0], can1Rx0Data[1], can1Rx0Data[2], can1Rx0Data[3],
+				 can1Rx0Data[4], can1Rx0Data[5], can1Rx0Data[6], can1Rx0Data[7]);
+
+	    // UART2로 송신 (USB-Serial 통해 PC로 전송됨)
+	    HAL_UART_Transmit(&huart2, (uint8_t*)uartBuf, strlen(uartBuf), HAL_MAX_DELAY);
+	  }
+}
+/* USER CODE END 4 */
+
+/**
+  * @brief  This function is executed in case of error occurrence.
+  * @retval None
+  */
+void Error_Handler(void)
+{
+  /* USER CODE BEGIN Error_Handler_Debug */
+  /* User can add his own implementation to report the HAL error return state */
+  __disable_irq();
+  while (1)
+  {
+  }
+  /* USER CODE END Error_Handler_Debug */
+}
+
+#ifdef  USE_FULL_ASSERT
+/**
+  * @brief  Reports the name of the source file and the source line number
+  *         where the assert_param error has occurred.
+  * @param  file: pointer to the source file name
+  * @param  line: assert_param error line source number
+  * @retval None
+  */
+void assert_failed(uint8_t *file, uint32_t line)
+{
+  /* USER CODE BEGIN 6 */
+  /* User can add his own implementation to report the file name and line number,
+     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+  /* USER CODE END 6 */
+}
+#endif /* USE_FULL_ASSERT */
