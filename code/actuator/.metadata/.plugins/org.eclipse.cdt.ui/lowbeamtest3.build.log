@@ -1,0 +1,98 @@
+14:10:08 **** Incremental Build of configuration Debug for project lowbeamtest3 ****
+make -j12 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m3 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F103xB -c -I../Core/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc -I../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'can_init':
+../Core/Src/main.c:201:6: warning: type of 'filter_mask' defaults to 'int' [-Wimplicit-int]
+  201 | void can_init(filter_mask,filter_id){
+      |      ^~~~~~~~
+../Core/Src/main.c:201:6: warning: type of 'filter_id' defaults to 'int' [-Wimplicit-int]
+../Core/Src/main.c:203:9: warning: implicit declaration of function 'filter_init' [-Wimplicit-function-declaration]
+  203 |         filter_init(filter_mask, filter_id);
+      |         ^~~~~~~~~~~
+../Core/Src/main.c: In function 'light_init':
+../Core/Src/main.c:286:9: warning: implicit declaration of function 'ws2812_scroll_init' [-Wimplicit-function-declaration]
+  286 |         ws2812_scroll_init();
+      |         ^~~~~~~~~~~~~~~~~~
+../Core/Src/main.c: At top level:
+../Core/Src/main.c:299:6: warning: conflicting types for 'ws2812_scroll_init'; have 'void(void)'
+  299 | void ws2812_scroll_init(void)// LED 시작시에 애니메이션 기능을 넣으면 좋지않을까? -> 보완해야함
+      |      ^~~~~~~~~~~~~~~~~~
+../Core/Src/main.c:286:9: note: previous implicit declaration of 'ws2812_scroll_init' with type 'void(void)'
+  286 |         ws2812_scroll_init();
+      |         ^~~~~~~~~~~~~~~~~~
+../Core/Src/main.c: In function 'driving_mode_change':
+../Core/Src/main.c:425:25: warning: implicit declaration of function 'rotate_rmotor' [-Wimplicit-function-declaration]
+  425 |                         rotate_rmotor(1, 5, 100); // 반시계 방향 100스텝
+      |                         ^~~~~~~~~~~~~
+../Core/Src/main.c:426:25: warning: implicit declaration of function 'rotate_lmotor' [-Wimplicit-function-declaration]
+  426 |                         rotate_lmotor(0, 5, 100); // 시계 방향 100스텝
+      |                         ^~~~~~~~~~~~~
+../Core/Src/main.c: At top level:
+../Core/Src/main.c:680:6: warning: conflicting types for 'rotate_lmotor'; have 'void(uint8_t,  uint16_t,  uint16_t)' {aka 'void(unsigned char,  short unsigned int,  short unsigned int)'}
+  680 | void rotate_lmotor(uint8_t dir, uint16_t delay_ms, uint16_t steps)
+      |      ^~~~~~~~~~~~~
+../Core/Src/main.c:426:25: note: previous implicit declaration of 'rotate_lmotor' with type 'void(uint8_t,  uint16_t,  uint16_t)' {aka 'void(unsigned char,  short unsigned int,  short unsigned int)'}
+  426 |                         rotate_lmotor(0, 5, 100); // 시계 방향 100스텝
+      |                         ^~~~~~~~~~~~~
+../Core/Src/main.c:688:6: warning: conflicting types for 'rotate_rmotor'; have 'void(uint8_t,  uint16_t,  uint16_t)' {aka 'void(unsigned char,  short unsigned int,  short unsigned int)'}
+  688 | void rotate_rmotor(uint8_t dir, uint16_t delay_ms, uint16_t steps)
+      |      ^~~~~~~~~~~~~
+../Core/Src/main.c:425:25: note: previous implicit declaration of 'rotate_rmotor' with type 'void(uint8_t,  uint16_t,  uint16_t)' {aka 'void(unsigned char,  short unsigned int,  short unsigned int)'}
+  425 |                         rotate_rmotor(1, 5, 100); // 반시계 방향 100스텝
+      |                         ^~~~~~~~~~~~~
+../Core/Src/main.c: In function 'function':
+../Core/Src/main.c:720:25: warning: passing argument 1 of 'change_state1' makes pointer from integer without a cast [-Wint-conversion]
+  720 |           change_state1(data);
+      |                         ^~~~
+      |                         |
+      |                         uint8_t {aka unsigned char}
+../Core/Src/main.c:706:29: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'uint8_t' {aka 'unsigned char'}
+  706 | void change_state1(uint8_t* data){
+      |                    ~~~~~~~~~^~~~
+../Core/Src/main.c: In function 'HAL_CAN_RxFifo0MsgPendingCallback':
+../Core/Src/main.c:944:13: warning: implicit declaration of function 'snprintf' [-Wimplicit-function-declaration]
+  944 |             snprintf(uartBuf, sizeof(uartBuf),
+      |             ^~~~~~~~
+../Core/Src/main.c:26:1: note: include '<stdio.h>' or provide a declaration of 'snprintf'
+   25 | #include "gpio.h"
+  +++ |+#include <stdio.h>
+   26 | 
+../Core/Src/main.c:944:13: warning: incompatible implicit declaration of built-in function 'snprintf' [-Wbuiltin-declaration-mismatch]
+  944 |             snprintf(uartBuf, sizeof(uartBuf),
+      |             ^~~~~~~~
+../Core/Src/main.c:944:13: note: include '<stdio.h>' or provide a declaration of 'snprintf'
+../Core/Src/main.c:945:36: warning: format '%X' expects argument of type 'unsigned int', but argument 4 has type 'uint32_t' {aka 'long unsigned int'} [-Wformat=]
+  945 |                      "CAN ID: 0x%03X | DATA: %02X %02X %02X %02X %02X %02X %02X %02X\r\n",
+      |                                 ~~~^
+      |                                    |
+      |                                    unsigned int
+      |                                 %03lX
+  946 |                                  canRxHeader.StdId,
+      |                                  ~~~~~~~~~~~~~~~~~
+      |                                             |
+      |                                             uint32_t {aka long unsigned int}
+../Core/Src/main.c:951:59: warning: implicit declaration of function 'strlen' [-Wimplicit-function-declaration]
+  951 |             HAL_UART_Transmit(&huart2, (uint8_t*)uartBuf, strlen(uartBuf), HAL_MAX_DELAY);
+      |                                                           ^~~~~~
+../Core/Src/main.c:26:1: note: include '<string.h>' or provide a declaration of 'strlen'
+   25 | #include "gpio.h"
+  +++ |+#include <string.h>
+   26 | 
+../Core/Src/main.c:951:59: warning: incompatible implicit declaration of built-in function 'strlen' [-Wbuiltin-declaration-mismatch]
+  951 |             HAL_UART_Transmit(&huart2, (uint8_t*)uartBuf, strlen(uartBuf), HAL_MAX_DELAY);
+      |                                                           ^~~~~~
+../Core/Src/main.c:951:59: note: include '<string.h>' or provide a declaration of 'strlen'
+arm-none-eabi-gcc -o "lowbeamtest3.elf" @"objects.list"   -mcpu=cortex-m3 -T"C:\Users\USER\Desktop\DrivingConvenience\actuator\STM32F103RBTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="lowbeamtest3.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: lowbeamtest3.elf
+ 
+arm-none-eabi-size  lowbeamtest3.elf 
+arm-none-eabi-objdump -h -S lowbeamtest3.elf  > "lowbeamtest3.list"
+   text	   data	    bss	    dec	    hex	filename
+  23596	    108	   4236	  27940	   6d24	lowbeamtest3.elf
+Finished building: default.size.stdout
+ 
+Finished building: lowbeamtest3.list
+ 
+
+14:10:09 Build Finished. 0 errors, 15 warnings. (took 1s.19ms)
+
