@@ -12,7 +12,7 @@ int auto_count;
 
 void mode_auto_init()
 {
-	sensor_info.mode[STM_TRANS].mode_auto = AUTO_MODE_OFF;
+	sensor_info.mode[STM_TRANS].mode_high_beam = AUTO_MODE_OFF;
 	auto_count = 0;
 }
 
@@ -20,20 +20,21 @@ void set_auto_mode()
 {
 	if (!sensor_info.error_flag.brightness_error)
 	{
-		if (get_sensor_brightness() > 2000)
+		if (get_sensor_brightness() > 3000)
 		{
-			 sensor_info.mode[STM_CONTROLLER].mode_auto = AUTO_MODE_ON;
+			 sensor_info.mode[STM_TRANS].mode_high_beam = AUTO_MODE_OFF;
 		}
 		else
 		{
-			 sensor_info.mode[STM_CONTROLLER].mode_auto = AUTO_MODE_OFF;
+			 sensor_info.mode[STM_TRANS].mode_high_beam = AUTO_MODE_ON;
 		}
+	   esp32_info.mode_high_beam = sensor_info.mode[STM_TRANS].mode_high_beam;
 	}
 }
 
 uint8_t get_auto_mode(int board)
 {
-	 return sensor_info.mode[board].mode_auto;
+	 return sensor_info.mode[board].mode_high_beam;
 }
 
 void compare_auto_mode()

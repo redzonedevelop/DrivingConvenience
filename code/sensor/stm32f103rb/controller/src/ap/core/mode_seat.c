@@ -41,4 +41,8 @@ void set_seat_beam()
 			sensor_info.mode[STM_TRANS].mode_seat = SEAT_MODE_OFF;
 		}
 	}
+	else {
+	  sensor_info.mode[STM_TRANS].mode_seat = SEAT_MODE_OFF;
+	}
+
 }

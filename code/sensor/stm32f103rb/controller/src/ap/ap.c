@@ -31,8 +31,7 @@ void ap_init(void)
   scheduler_init();
 //  uartOpen(_DEF_UART2, 115200);
 //  cliOpen(_DEF_UART2, 115200);
-
-
+  sensor_info.mode[0].mode_auto = AUTO_MODE_ON;
 
 
 }
@@ -118,13 +117,12 @@ void app_task_15ms(void)
 	set_corner_light_beam();
 	set_mode_driving();
 	set_mode_fog_light();
-	set_mode_high_beam();
+//	set_mode_high_beam();
 	set_mode_rain_road();
 	set_seat_beam();
-	compare_auto_mode();
-	compare_mode_high_beam();
-	compare_mode_rain_road();
-
+	//compare_auto_mode();
+//	compare_mode_high_beam();
+//	compare_mode_rain_road();
 }
 
 void app_task_20ms(void)

@@ -23,11 +23,11 @@ void set_mode_rain_road()
       //if (sensor_info.sensor_value.rain)
       if (get_sensor_rain())
       {
-         sensor_info.mode[STM_CONTROLLER].mode_rain_road = RAINROAD_MODE_ON;
+         sensor_info.mode[STM_TRANS].mode_rain_road = RAINROAD_MODE_ON;
       }
       else
       {
-         sensor_info.mode[STM_CONTROLLER].mode_rain_road = RAINROAD_MODE_OFF;
+         sensor_info.mode[STM_TRANS].mode_rain_road = RAINROAD_MODE_OFF;
       }
    }
 }

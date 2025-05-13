@@ -22,11 +22,11 @@ void set_mode_high_beam()
    {
       if (get_sensor_darkness())
       {
-         sensor_info.mode[STM_CONTROLLER].mode_high_beam = HIGH_BEAM_MODE_ON;
+         sensor_info.mode[STM_TRANS].mode_high_beam = HIGH_BEAM_MODE_ON;
       }
       else
       {
-         sensor_info.mode[STM_CONTROLLER].mode_high_beam = HIGH_BEAM_MODE_OFF;
+         sensor_info.mode[STM_TRANS].mode_high_beam = HIGH_BEAM_MODE_OFF;
       }
    }
    esp32_info.mode_high_beam = sensor_info.mode[STM_TRANS].mode_high_beam;
